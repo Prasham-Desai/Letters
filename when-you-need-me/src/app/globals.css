@@ -1,0 +1,253 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens ─────────────────────────────────── */
+:root {
+  --cream:        #f5f0e8;
+  --beige:        #ede8de;
+  --parchment:    #e8e0d0;
+  --ivory:        #faf6ee;
+  --warm:         #f0e8d8;
+  --aged:         #e4d9c4;
+  --soft:         #ede6d8;
+
+  --charcoal:     #3a3530;
+  --ink:          #2e2820;
+  --warm-gray:    #7a7168;
+  --light-gray:   #b8b0a4;
+
+  --sage:         #8a9e8a;
+  --sage-light:   #b5c4b1;
+  --terracotta:   #c4785a;
+  --amber:        #c9924a;
+  --dusty-blue:   #7a95a8;
+  --muted-rose:   #c4907a;
+
+  /* Wax seal colors */
+  --seal-burgundy:  #7a2840;
+  --seal-forest:    #3a5c3a;
+  --seal-navy:      #2c4060;
+  --seal-terracotta:#b46048;
+  --seal-brown:     #6b4c30;
+  --seal-purple:    #4a3860;
+
+  --font-heading: 'Caveat', cursive;
+  --font-body:    'Kalam', cursive;
+  --font-ui:      'Nunito', system-ui, sans-serif;
+
+  --shadow-sm: 0 2px 8px rgba(58,53,48,0.08), 0 1px 3px rgba(58,53,48,0.06);
+  --shadow-md: 0 6px 24px rgba(58,53,48,0.12), 0 2px 8px rgba(58,53,48,0.08);
+  --shadow-lg: 0 16px 48px rgba(58,53,48,0.18), 0 4px 16px rgba(58,53,48,0.10);
+  --shadow-xl: 0 24px 64px rgba(58,53,48,0.22), 0 8px 24px rgba(58,53,48,0.14);
+}
+
+/* ─── Base ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { height: 100%; }
+
+body {
+  font-family: var(--font-body);
+  background-color: #ece5d8;
+  background-image: radial-gradient(rgba(139, 118, 90, 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--charcoal);
+  height: 100%;
+  cursor: none;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide default cursor */
+* { cursor: none !important; }
+
+/* ─── Typography ─────────────────────────────────────── */
+.font-heading { font-family: var(--font-heading); }
+.font-body    { font-family: var(--font-body); }
+.font-ui      { font-family: var(--font-ui); }
+
+/* ─── Paper Texture ──────────────────────────────────── */
+.paper-texture {
+  position: relative;
+}
+.paper-texture::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+/* ─── Desk Surface ───────────────────────────────────── */
+.desk-surface {
+  background-color: #c8a878;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,0.015) 3px,
+      rgba(0,0,0,0.015) 4px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 40px,
+      rgba(0,0,0,0.008) 40px,
+      rgba(0,0,0,0.008) 41px
+    ),
+    linear-gradient(
+      160deg,
+      #d4b08a 0%,
+      #c8a878 30%,
+      #b89660 60%,
+      #c4a070 100%
+    );
+}
+
+/* ─── Envelope Papers ────────────────────────────────── */
+.paper-cream  { background-color: var(--cream); }
+.paper-ivory  { background-color: var(--ivory); }
+.paper-warm   { background-color: var(--warm); }
+.paper-aged   { background-color: var(--aged); }
+.paper-soft   { background-color: var(--soft); }
+
+/* ─── Time of Day Overlays ───────────────────────────── */
+.time-morning  { background: rgba(255, 220, 150, 0.06); }
+.time-afternoon{ background: rgba(255, 255, 255, 0.0); }
+.time-evening  { background: rgba(200, 130, 60, 0.10); }
+.time-night    { background: rgba(20, 30, 60, 0.20); }
+
+/* ─── Custom Cursor ──────────────────────────────────── */
+.custom-cursor {
+  position: fixed;
+  top: 0; left: 0;
+  width: 24px; height: 24px;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: width 0.15s ease, height 0.15s ease, opacity 0.2s ease;
+}
+
+/* ─── Skip Button ────────────────────────────────────── */
+.skip-btn {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--warm-gray);
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  border: 1px solid var(--light-gray);
+  background: rgba(245, 240, 232, 0.7);
+  backdrop-filter: blur(4px);
+  padding: 6px 16px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+.skip-btn:hover { color: var(--charcoal); border-color: var(--warm-gray); }
+
+/* ─── Envelope ───────────────────────────────────────── */
+.envelope-wrapper {
+  position: absolute;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.envelope-body {
+  position: relative;
+  border-radius: 2px;
+  box-shadow: var(--shadow-md);
+  overflow: visible;
+}
+
+/* ─── Letter Reader ──────────────────────────────────── */
+.letter-paper {
+  background-color: var(--ivory);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 27px,
+      rgba(139, 126, 102, 0.12) 27px,
+      rgba(139, 126, 102, 0.12) 28px
+    );
+  background-position: 0 36px;
+  border-radius: 2px;
+  box-shadow: var(--shadow-xl);
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  line-height: 1.9;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+}
+
+.letter-paper p { margin-bottom: 0.75em; }
+.letter-paper em { font-style: italic; color: var(--warm-gray); }
+.letter-paper strong { font-weight: 600; }
+.letter-paper blockquote {
+  border-left: 2px solid var(--sage);
+  padding-left: 1em;
+  color: var(--warm-gray);
+  font-style: italic;
+}
+
+/* ─── Desk Close ─────────────────────────────────────── */
+.close-btn {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--warm-gray);
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  border: 1px solid var(--light-gray);
+  background: transparent;
+  padding: 5px 14px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+.close-btn:hover { color: var(--charcoal); border-color: var(--warm-gray); }
+
+/* ─── Doodle SVGs ────────────────────────────────────── */
+.doodle {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* ─── Dust Particles ─────────────────────────────────── */
+.dust-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────── */
+.letter-scroll::-webkit-scrollbar { width: 4px; }
+.letter-scroll::-webkit-scrollbar-track { background: transparent; }
+.letter-scroll::-webkit-scrollbar-thumb { background: var(--light-gray); border-radius: 2px; }
+
+/* ─── Focus visible ──────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ─── Mobile cursor reset ────────────────────────────── */
+@media (hover: none) {
+  * { cursor: auto !important; }
+  body { cursor: auto; }
+  .custom-cursor { display: none; }
+}
+
+/* ─── Reduced Motion ─────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
