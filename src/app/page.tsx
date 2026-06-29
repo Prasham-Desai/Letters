@@ -67,7 +67,7 @@ export default function Home() {
       deskRef.current.style.transform = 'translate(-50%, -50%)';
     }
     const file = letter.file.replace('.md', '');
-    const res  = await fetch(`/api/letters/${file}`);
+    const res  = await fetch(`/letters/${file}.md`);
     const text = res.ok ? await res.text() : '';
     setActiveContent(text);
     setActiveLetter(letter);
