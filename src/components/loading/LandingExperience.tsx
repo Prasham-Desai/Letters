@@ -162,7 +162,7 @@ export default function LandingExperience({ onComplete }: Props) {
               animate={stage >= 5 ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8 }}
             >
-              a small collection of letters · for every version of you
+              a small collection of notes · for every version of you
             </motion.p>
           </div>
 

@@ -9,6 +9,8 @@ import Doodles from '../doodles/Doodle';
 import Mailbox from '../mailbox/Mailbox';
 import CollectionBox from '../collection/CollectionBox';
 
+import { useAnimation } from '@/contexts/AnimationContext';
+
 interface Props {
   deskLetters: LetterMeta[];
   mailboxCount: number;
@@ -30,6 +32,8 @@ const Desk = memo(function Desk({
 }: Props) {
   const surfaceRef = useRef<HTMLDivElement>(null);
   const [placed, setPlaced] = useState<PlacedEnvelope[]>([]);
+  const { hiddenEnvelopeIds, flyEnvelope, mailboxRef } = useAnimation();
+  const prevDeskLettersRef = useRef<LetterMeta[]>(deskLetters);
 
   const recalculate = useCallback(() => {
     if (!surfaceRef.current) return;
@@ -38,9 +42,9 @@ const Desk = memo(function Desk({
     const usableW = W - 160; // 80px each side for mailbox/collection
     const usableH = H - 40;
     const isMobile = W < 500;
-    const placed = placeEnvelopes(deskLetters, usableW, usableH, isMobile);
+    const newPlaced = placeEnvelopes(deskLetters, usableW, usableH, isMobile);
     // Offset into center of desk
-    setPlaced(placed.map(p => ({ ...p, x: p.x + 80, y: p.y + 16, deskW: W, deskH: H })));
+    setPlaced(newPlaced.map(p => ({ ...p, x: p.x + 80, y: p.y + 16, deskW: W, deskH: H })));
   }, [deskLetters]);
 
   useEffect(() => {
@@ -49,6 +53,26 @@ const Desk = memo(function Desk({
     if (surfaceRef.current) ro.observe(surfaceRef.current);
     return () => ro.disconnect();
   }, [recalculate]);
+
+  useEffect(() => {
+    // Detect newly dropped letters (from mailbox to desk)
+    const newLetters = deskLetters.filter(l => !prevDeskLettersRef.current.find(p => p.id === l.id));
+    
+    newLetters.forEach(letter => {
+      // Find where it's placed on the desk
+      const p = placed.find(p => p.id === letter.id);
+      if (!p || !surfaceRef.current || !mailboxRef.current) return;
+      
+      const deskRect = surfaceRef.current.getBoundingClientRect();
+      const mailboxRect = mailboxRef.current.getBoundingClientRect();
+      // Calculate final absolute DOM rect (assuming ~160x110 for horizontal, 110x160 for vertical based on dimensions)
+      const endRect = new DOMRect(deskRect.left + p.x, deskRect.top + p.y, p.width, p.height);
+      
+      flyEnvelope(p, mailboxRect, endRect, 'MAILBOX_TO_DESK', () => {});
+    });
+
+    prevDeskLettersRef.current = deskLetters;
+  }, [deskLetters, placed, flyEnvelope, mailboxRef]);
 
   // Empty desk hint
   const isEmpty = deskLetters.length === 0;
@@ -71,7 +95,7 @@ const Desk = memo(function Desk({
             data={env}
             isOpened={openedLetterIds.includes(env.id)}
             onClick={() => onEnvelopeClick(env)}
-            dropDelay={i * 0.12}
+            isHidden={hiddenEnvelopeIds.has(env.id)}
           />
         ))}
       </AnimatePresence>

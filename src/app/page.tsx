@@ -4,6 +4,7 @@ import { LetterMeta } from '@/types/letter';
 import { getLetterIndex } from '@/lib/letters';
 import { useLetterState } from '@/hooks/useLetterState';
 import { useTimeOfDay } from '@/hooks/useTimeOfDay';
+import { useAnimation } from '@/contexts/AnimationContext';
 import LandingExperience from '@/components/loading/LandingExperience';
 import Desk from '@/components/desk/Desk';
 import LetterReader from '@/components/letter/LetterReader';
@@ -26,6 +27,7 @@ export default function Home() {
   const letterOpen = useRef(false);
 
   const timeOfDay = useTimeOfDay();
+  const { flyEnvelope, collectionBoxRef } = useAnimation();
 
   const {
     mailboxIds, deskIds, collectionIds,
@@ -74,11 +76,30 @@ export default function Home() {
   }, []);
 
   const handleClose = useCallback(() => {
-    if (activeLetter) moveToCollection(activeLetter.id);
+    if (activeLetter) {
+      const envelopeEl = document.getElementById(`envelope-${activeLetter.id}`);
+      if (envelopeEl && collectionBoxRef.current) {
+        const startRect = envelopeEl.getBoundingClientRect();
+        const endRect = collectionBoxRef.current.getBoundingClientRect();
+        
+        // We simulate a PlacedEnvelope just for rendering the flight clone
+        const pEnv = { 
+          ...activeLetter, 
+          x: 0, y: 0, deskW: 0, deskH: 0, width: 160, height: 110, 
+          rotation: (Math.random() - 0.5) * 20 
+        };
+
+        flyEnvelope(pEnv as any, startRect, endRect, 'DESK_TO_COLLECTION', () => {
+          moveToCollection(activeLetter.id);
+        });
+      } else {
+        moveToCollection(activeLetter.id);
+      }
+    }
     setActiveLetter(null);
     setActiveContent('');
     letterOpen.current = false;
-  }, [activeLetter, moveToCollection]);
+  }, [activeLetter, moveToCollection, flyEnvelope, collectionBoxRef]);
 
   const deskLetters       = letters.filter(l => deskIds.includes(l.id));
   const collectionLetters = letters.filter(l => collectionIds.includes(l.id));

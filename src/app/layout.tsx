@@ -3,13 +3,15 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "When You Need Me",
-  description: "A small collection of letters. For every version of you.",
+  description: "A small collection of notes. For every version of you.",
   openGraph: {
     title: "When You Need Me",
-    description: "A small collection of letters. For every version of you.",
+    description: "A small collection of notes. For every version of you.",
     type: "website",
   },
 };
+
+import { AnimationProvider } from '@/contexts/AnimationContext';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -23,7 +25,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="antialiased">
-        {children}
+        <AnimationProvider>
+          {children}
+        </AnimationProvider>
       </body>
     </html>
   );

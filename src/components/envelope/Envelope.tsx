@@ -18,20 +18,16 @@ interface Props {
   isOpened: boolean;
   onClick: () => void;
   dropDelay?: number;
+  isHidden?: boolean;
 }
 
-const Envelope = memo(function Envelope({ data, isOpened, onClick, dropDelay = 0 }: Props) {
+const Envelope = memo(function Envelope({ data, isOpened, onClick, dropDelay = 0, isHidden = false }: Props) {
   const [hovered, setHovered] = useState(false);
   const paperColor = PAPER_COLORS[data.paper] ?? '#f5eedf';
 
-  const initX = data.deskW ? 40 - data.x : 0;
-  const initY = data.deskH ? (data.deskH - 60) - data.y : -20;
-  
-  const exitX = data.deskW ? (data.deskW - 80) - data.x : 0;
-  const exitY = data.deskH ? (data.deskH - 60) - data.y : -20;
-
   return (
     <motion.div
+      id={`envelope-${data.id}`}
       style={{
         position: 'absolute',
         left: data.x,
@@ -42,24 +38,19 @@ const Envelope = memo(function Envelope({ data, isOpened, onClick, dropDelay = 0
         zIndex: hovered ? 20 : 10,
         transformOrigin: 'center bottom',
         cursor: 'pointer',
+        opacity: isHidden ? 0 : 1, // Completely invisible when FlightLayer is animating it
+        pointerEvents: isHidden ? 'none' : 'auto',
       }}
-      initial={{ opacity: 0, scale: 0.5, x: initX, y: initY, rotate: data.rotation - 15 }}
-      animate={{ opacity: 1, scale: 1, x: 0, y: 0, rotate: data.rotation }}
-      exit={{ opacity: 0, scale: 0.3, x: exitX, y: exitY, rotate: data.rotation + 15, transition: { duration: 0.4, ease: 'easeIn' } }}
-      transition={{
-        opacity: { duration: 0.4, delay: dropDelay },
-        scale: { type: 'spring', stiffness: 90, damping: 14, delay: dropDelay },
-        x: { type: 'spring', stiffness: 90, damping: 14, delay: dropDelay },
-        y: { type: 'spring', stiffness: 90, damping: 14, delay: dropDelay },
-        rotate: { type: 'spring', stiffness: 80, damping: 16, delay: dropDelay + 0.05 },
-      }}
-      whileHover={{ 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isHidden ? 0 : 1 }}
+      transition={{ opacity: { duration: 0.15 } }}
+      whileHover={!isHidden ? { 
         y: -6, 
         scale: 1.03, 
         rotate: data.rotation + 1,
         transition: { type: 'spring', stiffness: 300, damping: 20 } 
-      }}
-      whileTap={{ scale: 0.98 }}
+      } : {}}
+      whileTap={!isHidden ? { scale: 0.98 } : {}}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       onClick={onClick}
@@ -79,12 +70,11 @@ const Envelope = memo(function Envelope({ data, isOpened, onClick, dropDelay = 0
             ? '0 14px 40px rgba(50,38,24,0.22), 0 4px 12px rgba(50,38,24,0.14)'
             : '0 5px 18px rgba(50,38,24,0.16), 0 2px 6px rgba(50,38,24,0.10)',
           transition: 'box-shadow 0.3s ease',
-          overflow: 'hidden',
         }}
       >
         {/* Envelope fold lines */}
         <svg
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', borderRadius: '3px' }}
           preserveAspectRatio="none"
           viewBox={`0 0 ${data.width} ${data.height}`}
           fill="none"

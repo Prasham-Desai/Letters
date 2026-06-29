@@ -3,6 +3,7 @@ import { useState, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LetterMeta } from '@/types/letter';
 import WaxSeal from '../envelope/WaxSeal';
+import { useAnimation } from '@/contexts/AnimationContext';
 
 interface Props {
   count: number;
@@ -11,15 +12,19 @@ interface Props {
 }
 
 const CollectionBox = memo(function CollectionBox({ count, letters, onOpen }: Props) {
-  const [open, setOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const { collectionBoxRef, isCollectionOpening } = useAnimation();
+
+  // Lid tilts back if either the panel is open, or a letter is flying in
+  const isLidOpen = panelOpen || isCollectionOpening;
 
   return (
-    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div ref={collectionBoxRef} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       {/* Box */}
       <motion.div
-        onClick={() => count > 0 && setOpen(v => !v)}
+        onClick={() => count > 0 && setPanelOpen(v => !v)}
         style={{ cursor: count > 0 ? 'pointer' : 'default', position: 'relative' }}
-        whileHover={count > 0 ? { scale: 1.06, y: -2 } : {}}
+        whileHover={count > 0 ? { scale: 1.05, y: -2 } : {}}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       >
         <svg width="72" height="76" viewBox="0 0 72 76" fill="none" aria-label="Opened letters collection">
@@ -30,14 +35,14 @@ const CollectionBox = memo(function CollectionBox({ count, letters, onOpen }: Pr
 
           {/* Lid (open state tilts back) */}
           <motion.g
-            animate={{ rotate: open ? -40 : 0 }}
+            animate={{ rotate: isLidOpen ? -45 : 0 }}
             style={{ transformOrigin: '36px 30px' }}
-            transition={{ type: 'spring', stiffness: 140, damping: 18 }}
+            transition={{ type: 'spring', stiffness: 140, damping: 14, mass: 0.8 }}
           >
-            <rect x="2" y="22" width="68" height="12" rx="4" fill="#a07840" opacity="0.92"/>
+            <rect x="2" y="22" width="68" height="12" rx="4" fill="#a07840" opacity="0.95"/>
             {/* Lid clasp */}
-            <rect x="30" y="28" width="12" height="6" rx="2" fill="#c4a060" opacity="0.8"/>
-            <circle cx="36" cy="31" r="2" fill="#8a6a3a" opacity="0.7"/>
+            <rect x="30" y="28" width="12" height="6" rx="2" fill="#c4a060" opacity="0.9"/>
+            <circle cx="36" cy="31" r="2" fill="#8a6a3a" opacity="0.8"/>
           </motion.g>
 
           {/* Letters peeking out when there are collected letters */}
@@ -91,12 +96,12 @@ const CollectionBox = memo(function CollectionBox({ count, letters, onOpen }: Pr
 
       {/* Collection panel */}
       <AnimatePresence>
-        {open && (
+        {panelOpen && (
           <>
             <motion.div
               className="fixed inset-0" style={{ zIndex: 48 }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setOpen(false)}
+              onClick={() => setPanelOpen(false)}
               aria-hidden="true"
             />
             <motion.div
@@ -141,7 +146,7 @@ const CollectionBox = memo(function CollectionBox({ count, letters, onOpen }: Pr
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.04 }}
-                    onClick={() => { onOpen(letter); setOpen(false); }}
+                    onClick={() => { onOpen(letter); setPanelOpen(false); }}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '12px',
                       padding: '10px 20px',

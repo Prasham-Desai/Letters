@@ -1,6 +1,7 @@
 'use client';
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAnimation } from '@/contexts/AnimationContext';
 
 interface Props {
   count: number;
@@ -8,35 +9,33 @@ interface Props {
 }
 
 export default function Mailbox({ count, onDrop }: Props) {
-  const [shaking, setShaking] = useState(false);
-  const [dropping, setDropping] = useState(false);
-
+  const [wobbling, setWobbling] = useState(false);
+  const { mailboxRef, isMailboxOpening } = useAnimation();
+  
   const handleClick = useCallback(() => {
-    if (shaking || count === 0) return;
-    setShaking(true);
-    setTimeout(() => {
-      setShaking(false);
-      setDropping(true);
-      onDrop();
-      setTimeout(() => setDropping(false), 800);
-    }, 600);
-  }, [shaking, count, onDrop]);
+    if (wobbling || count === 0) return;
+    setWobbling(true);
+    // Tiny reactive wobble on the mailbox itself when clicked
+    setTimeout(() => setWobbling(false), 300);
+    onDrop(); // Trigger flight orchestrator
+  }, [wobbling, count, onDrop]);
 
   const isEmpty = count === 0;
 
   return (
     <div
+      ref={mailboxRef}
       style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
       title={isEmpty ? 'No more letters' : `${count} letter${count !== 1 ? 's' : ''} waiting`}
     >
       <motion.div
-        animate={shaking ? {
-          rotate: [0, -10, 10, -8, 8, -5, 5, -2, 2, 0],
-          transition: { duration: 0.6, ease: 'easeInOut' },
+        animate={wobbling ? {
+          y: [0, -2, 1, 0],
+          transition: { duration: 0.3, ease: 'easeOut' },
         } : {}}
         onClick={handleClick}
         style={{ cursor: isEmpty ? 'default' : 'pointer', position: 'relative' }}
-        whileHover={!isEmpty ? { scale: 1.06, y: -2 } : {}}
+        whileHover={!isEmpty ? { scale: 1.05, y: -2 } : {}}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       >
         {/* Mailbox SVG */}
@@ -44,23 +43,46 @@ export default function Mailbox({ count, onDrop }: Props) {
           {/* Post */}
           <rect x="31" y="62" width="8" height="26" rx="2" fill="#8a6a3a" opacity="0.85"/>
 
-          {/* Box body */}
-          <rect x="6" y="18" width="58" height="44" rx="5" fill="#b87048" opacity="0.92"/>
-          {/* Box top dome */}
-          <path d="M6 28 Q6 18 35 18 Q64 18 64 28" fill="#c47c54" opacity="0.9"/>
-          {/* Box shading */}
-          <rect x="6" y="18" width="58" height="6" rx="3" fill="rgba(255,255,255,0.12)"/>
-          <rect x="6" y="50" width="58" height="12" rx="0" fill="rgba(0,0,0,0.08)"/>
+          {/* Box body back */}
+          <rect x="6" y="18" width="58" height="44" rx="5" fill="#a45b34" opacity="0.95"/>
+          
+          {/* Inner dark slot (visible when door opens) */}
+          <rect x="10" y="24" width="50" height="32" rx="3" fill="#3a1e12" />
 
-          {/* Mail slot */}
-          <rect x="14" y="35" width="30" height="5" rx="2" fill="rgba(0,0,0,0.35)"/>
+          {/* Hinging Door */}
+          <motion.g
+            animate={{ 
+              rotateX: isMailboxOpening ? 160 : 0, // physically hinge downward
+              y: isMailboxOpening ? 2 : 0, // tiny settling shift
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 150,
+              damping: 14,
+              mass: 0.8
+            }}
+            style={{ 
+              transformOrigin: '50% 62px', // Hinge point at the bottom of the door
+              transformStyle: 'preserve-3d',
+            }}
+          >
+            {/* Box front/door */}
+            <rect x="6" y="18" width="58" height="44" rx="5" fill="#b87048" opacity="0.98"/>
+            <path d="M6 28 Q6 18 35 18 Q64 18 64 28" fill="#c47c54" opacity="0.98"/>
+            <rect x="6" y="18" width="58" height="6" rx="3" fill="rgba(255,255,255,0.12)"/>
+            <rect x="6" y="50" width="58" height="12" rx="0" fill="rgba(0,0,0,0.08)"/>
+            
+            {/* Mail slot on door */}
+            <rect x="14" y="35" width="30" height="5" rx="2" fill="rgba(0,0,0,0.4)"/>
+            
+            {/* Handle on door */}
+            <circle cx="52" cy="40" r="4" fill="#8a6a3a" opacity="0.9"/>
+            <circle cx="52" cy="40" r="2.5" fill="#c4a060" opacity="0.95"/>
+            <path d="M50 40 Q52 44 54 40" stroke="rgba(255,255,255,0.4)" strokeWidth="1" fill="none"/>
+          </motion.g>
 
-          {/* Door seam */}
-          <line x1="6" y1="36" x2="64" y2="36" stroke="rgba(0,0,0,0.12)" strokeWidth="0.8"/>
-
-          {/* Handle */}
-          <circle cx="52" cy="40" r="4" fill="#8a6a3a" opacity="0.7"/>
-          <circle cx="52" cy="40" r="2.5" fill="#c4a060" opacity="0.8"/>
+          {/* Door seam (hinge axis overlay) */}
+          <line x1="6" y1="62" x2="64" y2="62" stroke="rgba(0,0,0,0.2)" strokeWidth="1.5"/>
 
           {/* Flag */}
           <motion.g
@@ -76,28 +98,6 @@ export default function Mailbox({ count, onDrop }: Props) {
               animate={isEmpty ? { opacity: 0.4 } : { opacity: 0.9 }}
             />
           </motion.g>
-
-          {/* Drop animation letters */}
-          <AnimatePresence>
-            {dropping && [0,1,2].map(i => (
-              <motion.rect
-                key={i}
-                x={20 + i * 12}
-                y={30}
-                width={14}
-                height={10}
-                rx={1}
-                fill="#faf3e4"
-                opacity={0.9}
-                stroke="rgba(100,78,50,0.3)"
-                strokeWidth={0.5}
-                initial={{ y: 30, opacity: 0.9 }}
-                animate={{ y: 90, opacity: 0, rotate: (i - 1) * 20 }}
-                exit={{}}
-                transition={{ duration: 0.5, delay: i * 0.08, ease: 'easeIn' }}
-              />
-            ))}
-          </AnimatePresence>
         </svg>
 
         {/* Count badge */}
@@ -138,7 +138,7 @@ export default function Mailbox({ count, onDrop }: Props) {
         marginTop: '4px',
         opacity: 0.7,
       }}>
-        {isEmpty ? 'all read' : 'tap to open'}
+        inbox
       </p>
     </div>
   );
