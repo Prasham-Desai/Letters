@@ -109,62 +109,75 @@ const LetterReader = memo(function LetterReader({ letter, content, onClose }: Pr
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
               transition={{ duration: 0.5, ease: [0.2, 0.9, 0.2, 1] }}
             >
-              {/* Paper card — no animated background, static */}
+              {/* Paper card — premium cotton paper look */}
               <div
                 style={{
-                  backgroundColor: '#faf3e4',
-                  borderRadius: '4px',
-                  boxShadow: '0 22px 56px rgba(22,14,6,0.30), 0 4px 16px rgba(22,14,6,0.14)',
-                  padding: 'clamp(32px, 6vw, 52px) clamp(24px, 6vw, 48px)',
+                  background: 'linear-gradient(135deg, #fdfaf4 0%, #faf3e4 40%, #f4ebd8 100%)',
+                  borderRadius: '3px',
+                  boxShadow: '0 24px 64px rgba(22,14,6,0.35), 0 8px 24px rgba(22,14,6,0.18), inset 0 0 40px rgba(180,140,90,0.08)',
+                  padding: 'clamp(36px, 8vw, 60px) clamp(28px, 6vw, 52px)',
                   position: 'relative',
                   overflow: 'hidden',
                 }}
               >
+                {/* Paper texture overlay */}
+                <div style={{
+                  position: 'absolute', inset: 0, pointerEvents: 'none',
+                  backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'0.04\'/%3E%3C/svg%3E")',
+                  backgroundSize: '150px 150px',
+                  mixBlendMode: 'multiply',
+                }} aria-hidden="true" />
+
                 {/* Subtle top worn edge */}
                 <div style={{
-                  position: 'absolute', top: 0, left: 0, right: 0, height: 3,
-                  background: 'linear-gradient(90deg, transparent, rgba(160,128,78,0.18) 25%, rgba(160,128,78,0.14) 75%, transparent)',
+                  position: 'absolute', top: 0, left: 0, right: 0, height: 4,
+                  background: 'linear-gradient(90deg, transparent, rgba(160,128,78,0.25) 25%, rgba(160,128,78,0.2) 75%, transparent)',
+                  boxShadow: '0 1px 2px rgba(255,255,255,0.6) inset',
                 }} aria-hidden="true" />
 
                 {/* Faded wax seal watermark at top */}
                 <div style={{
-                  position: 'absolute', top: -10, left: '50%',
+                  position: 'absolute', top: -14, left: '50%',
                   transform: 'translateX(-50%)',
-                  opacity: 0.22, pointerEvents: 'none',
+                  opacity: 0.18, pointerEvents: 'none',
+                  filter: 'blur(0.5px)',
                 }}>
-                  <WaxSeal type={letter.sealType} color={letter.seal} cracked size={24} />
+                  <WaxSeal type={letter.sealType} color={letter.seal} cracked size={28} />
                 </div>
 
                 {/* "Open when..." label */}
                 <p style={{
                   fontFamily: 'var(--font-ui)',
-                  fontSize: '9px',
-                  letterSpacing: '0.18em',
-                  textTransform: 'lowercase',
+                  fontSize: '9.5px',
+                  letterSpacing: '0.22em',
+                  textTransform: 'uppercase',
                   color: '#9a8470',
                   textAlign: 'center',
-                  marginBottom: '28px',
-                  opacity: 0.9,
+                  marginBottom: '32px',
+                  opacity: 0.85,
                 }}>
                   {letter.title}
                 </p>
 
                 {/* Letter text with word-by-word reveal */}
-                <LineReveal lines={lines} active={textActive} onCalculateDelay={setSignatureDelay} />
+                <div style={{ textShadow: '0 0.5px 0.5px rgba(42,30,16,0.1)' }}>
+                  <LineReveal lines={lines} active={textActive} onCalculateDelay={setSignatureDelay} />
+                </div>
 
                 {/* Divider + signature */}
                 <motion.div
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: textActive ? 0.65 : 0 }}
-                  transition={{ delay: signatureDelay, duration: 0.6 }}
+                  animate={{ opacity: textActive ? 0.75 : 0 }}
+                  transition={{ delay: signatureDelay, duration: 0.8 }}
                   style={{
-                    marginTop: '28px',
-                    paddingTop: '16px',
-                    borderTop: '1px solid rgba(139,110,72,0.18)',
+                    marginTop: '32px',
+                    paddingTop: '20px',
+                    borderTop: '1px solid rgba(139,110,72,0.15)',
                     fontFamily: 'var(--font-heading)',
-                    fontSize: '1.05rem',
-                    color: '#7a6448',
+                    fontSize: '1.2rem',
+                    color: '#6a5438',
                     textAlign: 'right',
+                    textShadow: '0 0.5px 0.5px rgba(42,30,16,0.1)',
                   }}
                 >
                   — always, yours
@@ -172,8 +185,8 @@ const LetterReader = memo(function LetterReader({ letter, content, onClose }: Pr
 
                 {/* Bottom worn edge */}
                 <div style={{
-                  position: 'absolute', bottom: 0, left: 0, right: 0, height: 3,
-                  background: 'linear-gradient(90deg, transparent, rgba(160,128,78,0.16) 25%, rgba(160,128,78,0.12) 75%, transparent)',
+                  position: 'absolute', bottom: 0, left: 0, right: 0, height: 4,
+                  background: 'linear-gradient(90deg, transparent, rgba(160,128,78,0.2) 25%, rgba(160,128,78,0.15) 75%, transparent)',
                 }} aria-hidden="true" />
               </div>
 

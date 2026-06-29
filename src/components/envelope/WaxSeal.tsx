@@ -1,12 +1,14 @@
 import { WaxSealType, SealColor } from '@/types/letter';
+import { memo } from 'react';
 
-const SEAL_COLORS: Record<SealColor, { base: string; dark: string; light: string }> = {
-  burgundy:   { base: '#8b2030', dark: '#4a111a', light: '#ba3b4d' },
-  forest:     { base: '#2b5030', dark: '#152918', light: '#457a4a' },
-  navy:       { base: '#253550', dark: '#111a2b', light: '#3a5075' },
-  terracotta: { base: '#b54b35', dark: '#632518', light: '#d96c55' },
-  brown:      { base: '#6e4526', dark: '#3b2311', light: '#96633b' },
-  purple:     { base: '#4c2e63', dark: '#281736', light: '#704791' },
+// Premium tailored colors for realistic wax
+const SEAL_COLORS: Record<SealColor, { base: string; dark: string; light: string; highlight: string }> = {
+  burgundy:   { base: '#8b2030', dark: '#3a0812', light: '#ba3b4d', highlight: '#e86a7d' },
+  forest:     { base: '#2b5030', dark: '#102413', light: '#457a4a', highlight: '#73b079' },
+  navy:       { base: '#253550', dark: '#0c1524', light: '#3a5075', highlight: '#6884b3' },
+  terracotta: { base: '#b54b35', dark: '#4a170b', light: '#d96c55', highlight: '#ff9c87' },
+  brown:      { base: '#6e4526', dark: '#2b1708', light: '#96633b', highlight: '#c48f64' },
+  purple:     { base: '#4c2e63', dark: '#1c0c29', light: '#704791', highlight: '#9f73c4' },
 };
 
 interface Props {
@@ -16,129 +18,167 @@ interface Props {
   size?: number;
 }
 
-export default function WaxSeal({ type, color, cracked = false, size = 48 }: Props) {
-  const { base, dark, light } = SEAL_COLORS[color] ?? SEAL_COLORS.burgundy;
+const WaxSeal = memo(function WaxSeal({ type, color, cracked = false, size = 48 }: Props) {
+  const { base, dark, light, highlight } = SEAL_COLORS[color] ?? SEAL_COLORS.burgundy;
   const idPrefix = `${type}-${color}-${cracked ? 'c' : 'n'}`;
 
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 48 48"
+      viewBox="0 0 60 60"
       fill="none"
       aria-hidden="true"
-      style={{ overflow: 'visible' }}
+      style={{ 
+        overflow: 'visible',
+        filter: 'drop-shadow(0px 3px 6px rgba(40, 20, 8, 0.35)) drop-shadow(0px 1px 2px rgba(40, 20, 8, 0.2))',
+      }}
     >
       <defs>
-        <radialGradient id={`grad-base-${idPrefix}`} cx="35%" cy="35%" r="65%">
+        {/* Base wax lighting — strong directional light from top-left */}
+        <radialGradient id={`base-light-${idPrefix}`} cx="30%" cy="25%" r="70%">
           <stop offset="0%" stopColor={light} />
-          <stop offset="50%" stopColor={base} />
-          <stop offset="100%" stopColor={dark} />
+          <stop offset="30%" stopColor={base} />
+          <stop offset="85%" stopColor={dark} />
+          <stop offset="100%" stopColor="#110500" />
         </radialGradient>
         
-        <radialGradient id={`grad-inner-${idPrefix}`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor={dark} stopOpacity="0.7"/>
-          <stop offset="70%" stopColor={base} stopOpacity="0.2"/>
-          <stop offset="100%" stopColor={light} stopOpacity="0.5"/>
+        {/* Raised rim highlight */}
+        <linearGradient id={`rim-highlight-${idPrefix}`} x1="10%" y1="10%" x2="90%" y2="90%">
+          <stop offset="0%" stopColor={highlight} stopOpacity="0.8" />
+          <stop offset="40%" stopColor={light} stopOpacity="0.2" />
+          <stop offset="60%" stopColor={dark} stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0.6" />
+        </linearGradient>
+
+        {/* Depressed center pool shadow */}
+        <radialGradient id={`pool-shadow-${idPrefix}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={dark} stopOpacity="0.8" />
+          <stop offset="70%" stopColor={base} stopOpacity="0.4" />
+          <stop offset="100%" stopColor={light} stopOpacity="0.1" />
         </radialGradient>
-        
-        <filter id={`drop-shadow-${idPrefix}`} x="-20%" y="-20%" width="150%" height="150%">
-          <feDropShadow dx="0" dy="2" stdDeviation="1.5" floodColor="#2e1b12" floodOpacity="0.4" />
+
+        {/* Engraving effect: inner shadow + subtle bottom lip highlight */}
+        <filter id={`engrave-${idPrefix}`} x="-20%" y="-20%" width="140%" height="140%">
+          {/* 1. Inner shadow (darkness inside the cut) */}
+          <feOffset dx="0.5" dy="1" in="SourceAlpha" result="shadowOffset" />
+          <feGaussianBlur stdDeviation="0.8" in="shadowOffset" result="shadowBlur" />
+          <feComposite operator="out" in="SourceAlpha" in2="shadowBlur" result="innerShadowMask" />
+          <feFlood floodColor={dark} floodOpacity="0.95" result="shadowColor" />
+          <feComposite operator="in" in="shadowColor" in2="innerShadowMask" result="innerShadow" />
+          
+          {/* 2. Bottom lip highlight (light catching the bottom edge of the cut) */}
+          <feOffset dx="-0.5" dy="-0.5" in="SourceAlpha" result="highlightOffset" />
+          <feGaussianBlur stdDeviation="0.4" in="highlightOffset" result="highlightBlur" />
+          <feComposite operator="out" in="SourceAlpha" in2="highlightBlur" result="highlightMask" />
+          <feFlood floodColor={highlight} floodOpacity="0.75" result="highlightColor" />
+          <feComposite operator="in" in="highlightColor" in2="highlightMask" result="bottomHighlight" />
+
+          {/* Merge them over the base shape */}
+          <feMerge>
+            <feMergeNode in="bottomHighlight" />
+            <feMergeNode in="innerShadow" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
         </filter>
 
-        <filter id={`inner-emboss-${idPrefix}`}>
-          {/* Inner shadow for the engraved look */}
-          <feOffset dx="0.5" dy="1"/>
-          <feGaussianBlur stdDeviation="0.5" result="offset-blur"/>
-          <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse"/>
-          <feFlood floodColor={dark} floodOpacity="0.9" result="color"/>
-          <feComposite operator="in" in="color" in2="inverse" result="shadow"/>
-          
-          {/* Subtle highlight on the bottom edge */}
-          <feOffset dx="-0.5" dy="-0.5"/>
-          <feGaussianBlur stdDeviation="0.5" result="offset-blur-light"/>
-          <feComposite operator="out" in="SourceGraphic" in2="offset-blur-light" result="inverse-light"/>
-          <feFlood floodColor={light} floodOpacity="0.8" result="color-light"/>
-          <feComposite operator="in" in="color-light" in2="inverse-light" result="highlight"/>
-
-          <feMerge>
-            <feMergeNode in="shadow"/>
-            <feMergeNode in="highlight"/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
+        {/* Subtle noise for wax texture */}
+        <filter id={`wax-texture-${idPrefix}`}>
+          <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" result="noise" />
+          <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.15 0" in="noise" result="coloredNoise" />
+          <feBlend mode="multiply" in="SourceGraphic" in2="coloredNoise" />
         </filter>
       </defs>
 
-      <g filter={`url(#drop-shadow-${idPrefix})`}>
-        {/* Organic outer edge representing squished wax */}
+      <g filter={`url(#wax-texture-${idPrefix})`}>
+        {/* Squished outer edge — more irregular and natural */}
         <path 
-          d="M 24 3 C 36 2, 45 10, 46 22 C 47 34, 38 45, 25 45 C 13 46, 3 37, 2 25 C 1 12, 11 4, 24 3 Z" 
-          fill={`url(#grad-base-${idPrefix})`}
+          d="M 29 4 C 44 2, 57 11, 56 28 C 55 45, 45 56, 28 55 C 13 54, 3 44, 4 29 C 5 13, 14 6, 29 4 Z" 
+          fill={`url(#base-light-${idPrefix})`}
         />
         
-        {/* Raised Rim highlight */}
+        {/* Thick Raised Rim */}
         <path 
-          d="M 24 6 C 34 5, 41 12, 42 22 C 43 32, 35 41, 25 41 C 14 42, 6 34, 5 24 C 4 13, 13 7, 24 6 Z" 
-          fill="none" stroke={light} strokeWidth="0.8" strokeOpacity="0.5"
+          d="M 30 7 C 42 6, 52 14, 51 28 C 50 42, 41 51, 29 50 C 16 49, 7 40, 8 29 C 9 16, 18 8, 30 7 Z" 
+          fill="none" stroke={`url(#rim-highlight-${idPrefix})`} strokeWidth="2.5"
         />
 
-        {/* Depressed center pool where the stamp hit */}
+        {/* Inner Depressed Pool */}
         <path 
-          d="M 24 8 C 33 7, 39 13, 40 23 C 41 31, 33 39, 25 39 C 15 40, 8 32, 7 24 C 6 14, 14 9, 24 8 Z" 
-          fill={`url(#grad-inner-${idPrefix})`}
+          d="M 30 10 C 40 9, 48 16, 47 28 C 46 39, 39 47, 29 46 C 18 45, 11 38, 12 28 C 13 17, 20 11, 30 10 Z" 
+          fill={`url(#pool-shadow-${idPrefix})`}
         />
       </g>
 
-      {/* Engraved Icon */}
-      <g filter={`url(#inner-emboss-${idPrefix})`} fill={base} opacity="0.9" transform="translate(24,24) scale(1.1)">
+      {/* Engraved Icon — Perfectly centered at (30, 30) */}
+      <g filter={`url(#engrave-${idPrefix})`} fill={base} opacity="0.92" transform="translate(30, 30)">
+        
         {type === 'flower' && (
-          <g>
+          <g transform="scale(1.35)">
             {[0, 60, 120, 180, 240, 300].map((a, i) => (
-              <ellipse key={i} cx={Math.cos((a * Math.PI) / 180) * 5.5} cy={Math.sin((a * Math.PI) / 180) * 5.5} rx="3" ry="4.5" transform={`rotate(${a})`} />
+              <ellipse key={i} cx={Math.cos((a * Math.PI) / 180) * 5} cy={Math.sin((a * Math.PI) / 180) * 5} rx="2.5" ry="4" transform={`rotate(${a})`} />
             ))}
             <circle cx="0" cy="0" r="3.5" />
           </g>
         )}
+        
         {type === 'moon' && (
-          <path d="M 4 -7 A 7 7 0 1 0 4 7 A 9 9 0 1 1 4 -7 Z" />
-        )}
-        {type === 'leaf' && (
-          <path d="M -5 -7 C -9 -3, -11 3, -9 9 C -7 13, -4 14, -4 14 C -4 14, -1 13, 1 9 C 3 3, 1 -3, -5 -7 Z" transform="rotate(30)" />
-        )}
-        {type === 'star' && (
-          <polygon points="0,-8 2.5,-2 9,-2 4,2.5 6,9 0,5 -6,9 -4,2.5 -9,-2 -2.5,-2" />
-        )}
-        {type === 'feather' && (
-          <path d="M 0 -9 Q 7 -2, 4 9 L 0 12 Q -4 4, -2 -5 Z M 0 12 L -1.5 -5" stroke={base} strokeWidth="0.5"/>
-        )}
-        {type === 'bear' && (
-          <g>
-            <circle cx="0" cy="1" r="5.5"/>
-            <circle cx="-5" cy="-4" r="3"/>
-            <circle cx="5" cy="-4" r="3"/>
-            <circle cx="-2" cy="0" r="1.2" fill={dark}/>
-            <circle cx="2" cy="0" r="1.2" fill={dark}/>
-            <path d="M -2 3 Q 0 5.5, 2 3" stroke={dark} strokeWidth="1" fill="none"/>
+          <g transform="scale(1.4) translate(-0.5, 0)">
+            <path d="M 4 -7 A 7 7 0 1 0 4 7 A 9 9 0 1 1 4 -7 Z" />
           </g>
         )}
+        
+        {type === 'leaf' && (
+          <g transform="scale(1.3) rotate(30)">
+            <path d="M -5 -7 C -9 -3, -11 3, -9 9 C -7 13, -4 14, -4 14 C -4 14, -1 13, 1 9 C 3 3, 1 -3, -5 -7 Z" />
+          </g>
+        )}
+        
+        {type === 'star' && (
+          <g transform="scale(1.2)">
+            <polygon points="0,-9 2.5,-3 9,-3 4,2 6,9 0,5 -6,9 -4,2 -9,-3 -2.5,-3" />
+          </g>
+        )}
+        
+        {type === 'feather' && (
+          <g transform="scale(1.3)">
+            <path d="M 0 -9 Q 7 -2, 4 9 L 0 12 Q -4 4, -2 -5 Z M 0 12 L -1.5 -5" stroke={base} strokeWidth="0.6"/>
+          </g>
+        )}
+        
+        {type === 'bear' && (
+          <g transform="scale(1.25)">
+            <circle cx="0" cy="1" r="6"/>
+            <circle cx="-5.5" cy="-4.5" r="3"/>
+            <circle cx="5.5" cy="-4.5" r="3"/>
+            <circle cx="-2.5" cy="0" r="1.2" fill={dark}/>
+            <circle cx="2.5" cy="0" r="1.2" fill={dark}/>
+            <path d="M -2.5 3 Q 0 5.5, 2.5 3" stroke={dark} strokeWidth="1" fill="none" strokeLinecap="round"/>
+          </g>
+        )}
+        
         {type === 'bird' && (
-          <g fill="none" stroke={base} strokeWidth="2">
-            <path d="M -6 -2 Q -1 -7, 3 -4 Q 6 -7, 10 -2"/>
-            <circle cx="3" cy="1" r="4" fill={base} stroke="none"/>
-            <path d="M 1.5 5 L 0 9 M 4.5 5 L 6 9" strokeWidth="1.2"/>
+          <g transform="scale(1.3)" fill="none" stroke={base} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M -7 -2 Q -1 -7, 4 -4 Q 7 -7, 11 -2"/>
+            <circle cx="4" cy="1" r="3.5" fill={base} stroke="none"/>
+            <path d="M 2.5 4 L 1 9 M 5.5 4 L 7 9" strokeWidth="1.2"/>
           </g>
         )}
       </g>
 
-      {/* Crack when opened */}
+      {/* Realistic Crack when opened */}
       {cracked && (
-        <g stroke={dark} strokeWidth="1.5" opacity="0.85" filter="url(#drop-shadow-crack)">
-          <filter id="drop-shadow-crack">
-            <feDropShadow dx="0.5" dy="0.5" stdDeviation="0.5" floodColor={light} floodOpacity="0.8" />
-          </filter>
-          <path d="M 24 10 L 27 18 L 22 22 L 25 32 L 24 40" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        <g>
+          {/* Crack shadow/depth */}
+          <path d="M 29 11 L 32 18 L 27 24 L 30 35 L 28 47" fill="none" stroke="#000" strokeWidth="1.5" opacity="0.6" />
+          {/* Crack highlight on left edge */}
+          <path d="M 28.5 11 L 31.5 18 L 26.5 24 L 29.5 35 L 27.5 47" fill="none" stroke={highlight} strokeWidth="0.8" opacity="0.8" />
+          {/* Core crack void */}
+          <path d="M 29 11 L 32 18 L 27 24 L 30 35 L 28 47" fill="none" stroke={dark} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
         </g>
       )}
     </svg>
   );
-}
+});
+
+export default WaxSeal;

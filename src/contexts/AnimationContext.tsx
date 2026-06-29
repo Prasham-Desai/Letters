@@ -127,22 +127,41 @@ export function useAnimation() {
   return ctx;
 }
 
-// Internal Component to render the flying clone
+// Internal Component to render the flying clone with physical motion
 function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: () => void }) {
   const { startRect, endRect, type, envelope } = flight;
   
-  // Calculate exact delta in absolute screen space
   const deltaX = endRect.left - startRect.left;
   const deltaY = endRect.top - startRect.top;
+  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
   
-  // Parabolic peak height (curves upward based on horizontal travel)
-  const peakY = deltaY < 0 ? deltaY - 120 : -120; 
-
+  // Dynamic arc height — proportional to distance, clamped
+  const arcHeight = Math.min(180, Math.max(80, distance * 0.35));
   const isMailbox = type === 'MAILBOX_TO_DESK';
 
-  // Bezier trajectory
-  // Mailbox -> Desk: Lifts vertically, then arcs to destination
-  // Desk -> Collection: Arcs and scales down
+  // 5-point trajectory for natural curved path
+  const yKeyframes = isMailbox
+    ? [30, -arcHeight * 0.4, -arcHeight, deltaY * 0.3 - arcHeight * 0.2, deltaY]
+    : [0, -arcHeight * 0.3, -arcHeight * 0.6, deltaY * 0.4 - arcHeight * 0.15, deltaY];
+  
+  const xKeyframes = isMailbox
+    ? [0, deltaX * 0.1, deltaX * 0.4, deltaX * 0.75, deltaX]
+    : [0, deltaX * 0.15, deltaX * 0.45, deltaX * 0.8, deltaX];
+
+  // Momentum-based rotation — banking in the direction of travel
+  const travelAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+  const baseRotation = envelope.rotation;
+  const rotKeyframes = isMailbox
+    ? [baseRotation - 30, baseRotation - 15, baseRotation + 8, baseRotation + 3, baseRotation]
+    : [baseRotation, baseRotation - 8, baseRotation - 18, baseRotation + travelAngle * 0.1, baseRotation + 30];
+
+  // Depth scaling — envelope feels larger at peak of arc
+  const scaleKeyframes = isMailbox
+    ? [0.5, 0.85, 1.12, 1.06, 1.0]
+    : [1.0, 1.06, 1.12, 0.8, 0.35];
+
+  // Shadow strength follows altitude
+  const opacityKeyframes = [1, 1, 1, 1, isMailbox ? 1 : 0.85];
 
   return (
     <motion.div
@@ -150,43 +169,38 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
         position: 'fixed',
         left: startRect.left,
         top: startRect.top,
-        width: startRect.width, // Match exact DOM size
-        height: startRect.height,
-        zIndex: 9999, // Fly over everything
-        pointerEvents: 'none', // Ignore clicks mid-flight
+        width: isMailbox ? endRect.width : startRect.width,
+        height: isMailbox ? endRect.height : startRect.height,
+        zIndex: 9999,
+        pointerEvents: 'none',
         transformOrigin: 'center center',
+        filter: 'drop-shadow(0 8px 16px rgba(40,24,8,0.25))',
       }}
       initial={{ 
-        x: 0, 
-        y: isMailbox ? 40 : 0, // start slightly hidden inside mailbox
-        scale: isMailbox ? 0.6 : 1, 
-        rotate: isMailbox ? envelope.rotation - 45 : envelope.rotation 
+        x: xKeyframes[0], 
+        y: yKeyframes[0],
+        scale: scaleKeyframes[0], 
+        rotate: rotKeyframes[0],
+        opacity: 1,
       }}
       animate={{ 
-        x: deltaX, 
-        y: [isMailbox ? 40 : 0, peakY, deltaY], // Parabolic arc keyframes
-        scale: isMailbox ? [0.6, 1.15, 1] : [1, 1.15, 0.4], // Scale up for depth illusion
-        rotate: [
-          isMailbox ? envelope.rotation - 45 : envelope.rotation, 
-          isMailbox ? envelope.rotation + 15 : envelope.rotation - 15, // Banking in air
-          isMailbox ? envelope.rotation : envelope.rotation + 45
-        ],
+        x: xKeyframes, 
+        y: yKeyframes,
+        scale: scaleKeyframes,
+        rotate: rotKeyframes,
+        opacity: opacityKeyframes,
       }}
       transition={{
-        duration: 0.65,
-        ease: "easeInOut",
-        times: [0, 0.5, 1], // Map the 3 keyframes
+        duration: 0.7,
+        ease: [0.25, 0.1, 0.25, 1], // Smooth cubic ease — fast start, gentle landing
+        times: [0, 0.2, 0.5, 0.8, 1],
       }}
       onAnimationComplete={onComplete}
     >
-      {/* 
-        Render a non-interactive clone of the envelope.
-        We pass x=0, y=0 because the outer motion.div handles translation!
-      */}
       <Envelope 
         data={{...envelope, x: 0, y: 0}} 
         isOpened={false}
-        onClick={() => {}} // Disabled
+        onClick={() => {}}
       />
     </motion.div>
   );

@@ -24,17 +24,17 @@ export default function DustParticles() {
 
     let W = canvas.width = canvas.offsetWidth;
     let H = canvas.height = canvas.offsetHeight;
-    const MAX = 14; // reduced for performance
+    const MAX = 30; // Increased for a more magical feel
 
     const spawn = (): Particle => ({
       x: Math.random() * W,
       y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.12,
-      vy: -Math.random() * 0.08 - 0.02,
-      opacity: Math.random() * 0.28 + 0.04,
-      size: Math.random() * 1.2 + 0.4,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: -Math.random() * 0.1 - 0.05,
+      opacity: Math.random() * 0.35 + 0.05,
+      size: Math.random() * 1.8 + 0.5,
       life: 0,
-      maxLife: Math.random() * 500 + 300,
+      maxLife: Math.random() * 600 + 400,
     });
 
     const particles: Particle[] = Array.from({ length: MAX }, () => {
@@ -46,21 +46,32 @@ export default function DustParticles() {
     let raf: number;
     let lastTime = 0;
     const draw = (time: number) => {
-      // throttle to ~30fps for performance
       if (time - lastTime < 33) { raf = requestAnimationFrame(draw); return; }
       lastTime = time;
       ctx.clearRect(0, 0, W, H);
+      
       for (const p of particles) {
         p.life++;
         p.x += p.vx;
         p.y += p.vy;
+        
+        // Gentle horizontal drift (sine wave)
+        p.x += Math.sin(p.life * 0.02) * 0.2;
+
         const t = p.life / p.maxLife;
-        const fade = t < 0.1 ? t / 0.1 : t > 0.85 ? (1 - t) / 0.15 : 1;
+        const fade = t < 0.15 ? t / 0.15 : t > 0.8 ? (1 - t) / 0.2 : 1;
+        
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(180,158,118,${p.opacity * fade})`;
+        ctx.fillStyle = `rgba(255, 230, 180, ${p.opacity * fade})`;
+        ctx.shadowBlur = p.size * 2;
+        ctx.shadowColor = `rgba(255, 200, 120, ${p.opacity * fade * 0.8})`;
         ctx.fill();
-        if (p.life >= p.maxLife) Object.assign(p, spawn(), { life: 0 });
+        
+        // Reset shadow for next draw to avoid compounding
+        ctx.shadowBlur = 0;
+
+        if (p.life >= p.maxLife || p.y < -10) Object.assign(p, spawn(), { life: 0, y: H + 10 });
       }
       raf = requestAnimationFrame(draw);
     };

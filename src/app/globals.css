@@ -2,6 +2,7 @@
 
 /* ─── Design Tokens ─────────────────────────────────── */
 :root {
+  /* Paper tones */
   --cream:        #f5f0e8;
   --beige:        #ede8de;
   --parchment:    #e8e0d0;
@@ -10,11 +11,13 @@
   --aged:         #e4d9c4;
   --soft:         #ede6d8;
 
+  /* Inks */
   --charcoal:     #3a3530;
   --ink:          #2e2820;
   --warm-gray:    #7a7168;
   --light-gray:   #b8b0a4;
 
+  /* Accents */
   --sage:         #8a9e8a;
   --sage-light:   #b5c4b1;
   --terracotta:   #c4785a;
@@ -30,14 +33,30 @@
   --seal-brown:     #6b4c30;
   --seal-purple:    #4a3860;
 
+  /* Wood tones */
+  --wood-light:   #d4b080;
+  --wood-mid:     #b8904a;
+  --wood-dark:    #8a6828;
+  --wood-shadow:  #5a3e14;
+
+  /* Brass hardware */
+  --brass:        #c4a050;
+  --brass-dark:   #8a7030;
+  --brass-shine:  #e8cc78;
+
   --font-heading: 'Caveat', cursive;
   --font-body:    'Kalam', cursive;
   --font-ui:      'Nunito', system-ui, sans-serif;
 
-  --shadow-sm: 0 2px 8px rgba(58,53,48,0.08), 0 1px 3px rgba(58,53,48,0.06);
-  --shadow-md: 0 6px 24px rgba(58,53,48,0.12), 0 2px 8px rgba(58,53,48,0.08);
-  --shadow-lg: 0 16px 48px rgba(58,53,48,0.18), 0 4px 16px rgba(58,53,48,0.10);
-  --shadow-xl: 0 24px 64px rgba(58,53,48,0.22), 0 8px 24px rgba(58,53,48,0.14);
+  /* Unified lighting — top-left source */
+  --light-angle: 135deg;
+  --shadow-sm: 0 2px 8px rgba(42,30,16,0.10), 0 1px 3px rgba(42,30,16,0.08);
+  --shadow-md: 0 6px 24px rgba(42,30,16,0.14), 0 2px 8px rgba(42,30,16,0.10);
+  --shadow-lg: 0 16px 48px rgba(42,30,16,0.20), 0 4px 16px rgba(42,30,16,0.12);
+  --shadow-xl: 0 24px 64px rgba(42,30,16,0.26), 0 8px 24px rgba(42,30,16,0.16);
+
+  /* Contact shadow */
+  --shadow-contact: 0 1px 2px rgba(42,30,16,0.18);
 }
 
 /* ─── Base ───────────────────────────────────────────── */
@@ -47,14 +66,25 @@ html { height: 100%; }
 
 body {
   font-family: var(--font-body);
-  background-color: #ece5d8;
-  background-image: radial-gradient(rgba(139, 118, 90, 0.15) 1px, transparent 1px);
-  background-size: 24px 24px;
   color: var(--charcoal);
   height: 100%;
   cursor: none;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
+
+  /* Rich studio-lit background: warm parchment with subtle depth */
+  background-color: #c8b898;
+  background-image:
+    /* Warm vignette from edges */
+    radial-gradient(ellipse 120% 100% at 50% 48%, transparent 30%, rgba(60,38,16,0.30) 100%),
+    /* Soft directional light from top-left */
+    radial-gradient(ellipse 80% 70% at 28% 22%, rgba(255,220,160,0.18) 0%, transparent 70%),
+    /* Subtle paper fiber texture */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='6' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.035'/%3E%3C/svg%3E"),
+    /* Base warm gradient */
+    linear-gradient(168deg, #d8c8a8 0%, #c4b490 30%, #b8a478 55%, #c0ad8c 80%, #c8b898 100%);
+  background-size: 100% 100%, 100% 100%, 300px 300px, 100% 100%;
+  background-attachment: fixed;
 }
 
 /* Hide default cursor */
@@ -65,7 +95,7 @@ body {
 .font-body    { font-family: var(--font-body); }
 .font-ui      { font-family: var(--font-ui); }
 
-/* ─── Paper Texture ──────────────────────────────────── */
+/* ─── Paper Texture (reusable overlay) ───────────────── */
 .paper-texture {
   position: relative;
 }
@@ -81,30 +111,52 @@ body {
   border-radius: inherit;
 }
 
-/* ─── Desk Surface ───────────────────────────────────── */
+/* ─── Premium Desk Surface ───────────────────────────── */
 .desk-surface {
-  background-color: #c8a878;
+  /* Deep walnut grain base */
+  background-color: #b08848;
   background-image:
+    /* Fine grain lines (horizontal — wood grain runs left-right) */
     repeating-linear-gradient(
-      90deg,
+      88deg,
       transparent,
-      transparent 3px,
-      rgba(0,0,0,0.015) 3px,
-      rgba(0,0,0,0.015) 4px
+      transparent 2px,
+      rgba(90,60,20,0.06) 2px,
+      rgba(90,60,20,0.06) 3px
     ),
+    /* Medium grain variation */
     repeating-linear-gradient(
-      0deg,
+      91deg,
       transparent,
-      transparent 40px,
-      rgba(0,0,0,0.008) 40px,
-      rgba(0,0,0,0.008) 41px
+      transparent 8px,
+      rgba(60,40,12,0.04) 8px,
+      rgba(60,40,12,0.04) 9px
     ),
+    /* Broad plank-like striations */
+    repeating-linear-gradient(
+      89deg,
+      transparent,
+      transparent 60px,
+      rgba(40,24,8,0.025) 60px,
+      rgba(40,24,8,0.025) 62px
+    ),
+    /* Cross-grain knot-like undulation */
+    repeating-linear-gradient(
+      4deg,
+      transparent,
+      transparent 100px,
+      rgba(80,50,18,0.015) 100px,
+      rgba(80,50,18,0.015) 102px
+    ),
+    /* Primary wood tone gradient — warm walnut */
     linear-gradient(
-      160deg,
-      #d4b08a 0%,
-      #c8a878 30%,
-      #b89660 60%,
-      #c4a070 100%
+      162deg,
+      #c89850 0%,
+      #b88838 18%,
+      #a87828 38%,
+      #b08040 58%,
+      #b88c48 75%,
+      #c49858 100%
     );
 }
 
@@ -194,7 +246,7 @@ body {
   font-style: italic;
 }
 
-/* ─── Desk Close ─────────────────────────────────────── */
+/* ─── Close Button ───────────────────────────────────── */
 .close-btn {
   font-family: var(--font-ui);
   font-size: 11px;
