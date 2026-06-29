@@ -204,34 +204,52 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
 
   const yPeak = Math.min(0, deltaY) - arcHeight;
   
-  // 3-point trajectory for perfectly smooth parabolic curves (Start, Peak, End)
-  const yKeyframes = [0, yPeak, deltaY];
-  const xKeyframes = [0, deltaX * 0.5, deltaX];
+  // Custom trajectories based on flight type
+  const yKeyframes = isMailbox
+    ? [0, -40, -50, yPeak, deltaY] // Extraction, Suspension, Flight, Landing
+    : [0, yPeak, deltaY];
+
+  const xKeyframes = isMailbox
+    ? [0, 0, deltaX * 0.05, deltaX * 0.6, deltaX]
+    : [0, deltaX * 0.5, deltaX];
 
   // Momentum-based rotation — banking in the direction of travel
   const travelAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
   const baseRotation = envelope.rotation;
   
-  // Smooth rotation during flight
   const rotKeyframes = isMailbox
-    ? [baseRotation - 30, baseRotation - 10, baseRotation]
+    ? [0, 0, travelAngle * 0.3, baseRotation + (travelAngle * 0.2), baseRotation]
     : isReturn
     ? [baseRotation, baseRotation - 30, baseRotation - 45]
     : [baseRotation, baseRotation - 15, baseRotation + 30];
 
   // Depth scaling — strictly 0.3 in boxes, 1.0 on desk
   const scaleKeyframes = isMailbox
-    ? [0.3, 0.7, 1.0]
+    ? [0.3, 0.35, 0.4, 0.85, 1.0]
     : isReturn
     ? [0.3, 0.6, 0.3]
     : [1.0, 0.7, 0.3];
 
   // Opacity: stays fully visible until the very end of collection drop
   const opacityKeyframes = isMailbox
-    ? [1, 1, 1]
+    ? [1, 1, 1, 1, 1]
     : isReturn
     ? [1, 0.9, 0]
     : [1, 1, 0.9];
+
+  const times = isMailbox 
+    ? [0, 0.15, 0.25, 0.8, 1.0] 
+    : [0, 0.5, 1.0];
+    
+  const ease = isMailbox
+    ? ["easeOut", "easeInOut", "easeOut", "easeIn"] // 4 segments
+    : ["easeOut", "easeIn"]; // 2 segments
+    
+  const duration = isMailbox 
+    ? 0.95 
+    : isReturn 
+    ? 0.5 
+    : 0.75;
 
   return (
     <motion.div
@@ -262,9 +280,9 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
         opacity: opacityKeyframes,
       }}
       transition={{
-        duration: isReturn ? 0.5 : 0.75, // Faster flight for returns
-        ease: ["easeOut", "easeIn"], // Eases OUT to the peak, eases IN to the drop
-        times: [0, 0.5, 1], // Exactly matching the 3 keyframes
+        duration,
+        ease: ease as any,
+        times,
       }}
       onAnimationComplete={onComplete}
     >

@@ -132,10 +132,10 @@ const Envelope = memo(function Envelope({ data, isOpened, onClick, dropDelay = 0
           {data.title}
         </div>
 
-        {/* Wax seal — perfectly centered at flap intersection */}
+        {/* Wax seal — shifted slightly lower from flap intersection */}
         <div style={{
           position: 'absolute',
-          top: `${data.height * 0.44}px`, /* Exactly at the V-fold apex */
+          top: `calc(${data.height * 0.44}px + 6px)`,
           left: '50%',
           transform: 'translate(-50%, -50%)',
           zIndex: 3,
