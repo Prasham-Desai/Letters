@@ -38,7 +38,7 @@ export default function Mailbox({ count, onDrop }: Props) {
         whileHover={!isEmpty ? { scale: 1.04, y: -3 } : {}}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       >
-        <svg width="80" height="100" viewBox="0 0 80 100" fill="none" aria-label="Mailbox">
+        <svg width="100" height="125" viewBox="0 0 80 100" fill="none" aria-label="Mailbox">
           <defs>
             {/* Wood grain filter */}
             <filter id="mailbox-grain">

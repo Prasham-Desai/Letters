@@ -34,7 +34,7 @@ const CollectionBox = memo(function CollectionBox({ count, letters, onOpen, mail
         whileHover={count > 0 ? { scale: 1.04, y: -3 } : {}}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       >
-        <svg width="84" height="86" viewBox="0 0 84 86" fill="none" aria-label="Keepsake collection">
+        <svg width="105" height="108" viewBox="0 0 84 86" fill="none" aria-label="Keepsake collection">
           <defs>
             {/* Wood gradient for chest body */}
             <linearGradient id="chest-wood" x1="0%" y1="0%" x2="0%" y2="100%">
