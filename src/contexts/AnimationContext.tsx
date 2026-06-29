@@ -200,18 +200,11 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
   // Dynamic arc height — proportional to distance, clamped
   const arcHeight = Math.min(180, Math.max(80, distance * 0.35));
 
-  // 5-point trajectory for natural curved path
-  const yKeyframes = isMailbox
-    ? [0, -arcHeight * 0.4, -arcHeight, deltaY * 0.3 - arcHeight * 0.2, deltaY]
-    : isReturn
-    ? [0, -arcHeight * 0.6, -arcHeight * 1.1, deltaY * 0.4 - arcHeight * 0.4, deltaY]
-    : [0, -arcHeight * 0.3, -arcHeight * 0.6, deltaY * 0.4 - arcHeight * 0.15, deltaY];
+  const yPeak = Math.min(0, deltaY) - arcHeight;
   
-  const xKeyframes = isMailbox
-    ? [0, deltaX * 0.1, deltaX * 0.4, deltaX * 0.75, deltaX]
-    : isReturn
-    ? [0, deltaX * 0.2, deltaX * 0.5, deltaX * 0.85, deltaX]
-    : [0, deltaX * 0.15, deltaX * 0.45, deltaX * 0.8, deltaX];
+  // 3-point trajectory for perfectly smooth parabolic curves (Start, Peak, End)
+  const yKeyframes = [0, yPeak, deltaY];
+  const xKeyframes = [0, deltaX * 0.5, deltaX];
 
   // Momentum-based rotation — banking in the direction of travel
   const travelAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
@@ -219,24 +212,24 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
   
   // Smooth rotation during flight
   const rotKeyframes = isMailbox
-    ? [baseRotation - 30, baseRotation - 10, baseRotation + 5, baseRotation + 2, baseRotation]
+    ? [baseRotation - 30, baseRotation - 10, baseRotation]
     : isReturn
-    ? [baseRotation, baseRotation - 15, baseRotation - 30, baseRotation + travelAngle * 0.1, baseRotation - 45]
-    : [baseRotation, baseRotation - 5, baseRotation - 15, baseRotation + travelAngle * 0.1, baseRotation + 30];
+    ? [baseRotation, baseRotation - 30, baseRotation - 45]
+    : [baseRotation, baseRotation - 15, baseRotation + 30];
 
-  // Depth scaling
+  // Depth scaling — strictly 0.3 in boxes, 1.0 on desk
   const scaleKeyframes = isMailbox
-    ? [0.5, 0.7, 0.85, 0.95, 1.0]
+    ? [0.3, 0.7, 1.0]
     : isReturn
-    ? [0.5, 0.65, 0.75, 0.6, 0.5]
-    : [1.0, 0.9, 0.75, 0.6, 0.5];
+    ? [0.3, 0.6, 0.3]
+    : [1.0, 0.7, 0.3];
 
   // Opacity: stays fully visible until the very end of collection drop
   const opacityKeyframes = isMailbox
-    ? [1, 1, 1, 1, 1]
+    ? [1, 1, 1]
     : isReturn
-    ? [1, 1, 1, 0.9, 0]
-    : [1, 1, 1, 1, 0.9];
+    ? [1, 0.9, 0]
+    : [1, 1, 0.9];
 
   return (
     <motion.div
@@ -268,8 +261,8 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
       }}
       transition={{
         duration: isReturn ? 0.5 : 0.75, // Faster flight for returns
-        ease: [0.25, 0.1, 0.25, 1], // Smooth cubic ease
-        times: [0, 0.25, 0.5, 0.75, 1],
+        ease: ["easeOut", "easeIn"], // Eases OUT to the peak, eases IN to the drop
+        times: [0, 0.5, 1], // Exactly matching the 3 keyframes
       }}
       onAnimationComplete={onComplete}
     >

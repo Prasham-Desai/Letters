@@ -271,16 +271,18 @@ export default function Home() {
 
           {/* Desk content */}
           <div style={{ position: 'relative', zIndex: 2, width: '100%', height: '100%' }}>
-            <Desk
-              deskLetters={deskLetters}
-              mailboxCount={mailboxIds.length}
-              collectionLetters={collectionLetters}
-              onEnvelopeClick={openLetter}
-              onMailboxDrop={handleMailboxDrop}
-              onCollectionOpen={openLetter}
-              onReturnAll={resetLetters}
-              openedLetterIds={collectionIds}
-            />
+            {letters.length > 0 && (
+              <Desk
+                deskLetters={deskLetters}
+                mailboxCount={mailboxIds.length}
+                collectionLetters={collectionLetters}
+                onEnvelopeClick={openLetter}
+                onMailboxDrop={handleMailboxDrop}
+                onCollectionOpen={openLetter}
+                onReturnAll={resetLetters}
+                openedLetterIds={collectionIds}
+              />
+            )}
           </div>
         </div>
       </div>
