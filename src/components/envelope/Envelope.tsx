@@ -45,10 +45,9 @@ const Envelope = memo(function Envelope({ data, isOpened, onClick, dropDelay = 0
       animate={{ opacity: isHidden ? 0 : 1 }}
       transition={{ opacity: { duration: 0.15 } }}
       whileHover={!isHidden ? { 
-        y: -8, 
-        scale: 1.04, 
-        rotate: data.rotation + 0.8,
-        transition: { type: 'spring', stiffness: 280, damping: 18 } 
+        z: 40,
+        rotate: data.rotation + 2,
+        transition: { type: 'spring', stiffness: 200, damping: 15 } 
       } : {}}
       whileTap={!isHidden ? { scale: 0.97 } : {}}
       onHoverStart={() => setHovered(true)}

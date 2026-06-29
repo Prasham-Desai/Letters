@@ -164,6 +164,43 @@ export default function Home() {
               activeLetterId={activeLetter?.id}
             />
           )}
+          
+          {/* Mailbox — desk-integrated, left side */}
+          <div 
+            className="billboard"
+            style={{
+              position: 'absolute',
+              left: '5%',
+              top: '5%',
+              zIndex: 15,
+              opacity: landingSeen ? 1 : 0,
+              transition: 'opacity 1.2s ease 0.5s',
+            }}
+          >
+            <Mailbox count={mailboxIds.length} onDrop={handleMailboxDrop} />
+          </div>
+
+          {/* Collection Box — desk-integrated, right side */}
+          <div 
+            className="billboard"
+            style={{
+              position: 'absolute',
+              right: '5%',
+              top: '5%',
+              zIndex: 15,
+              opacity: landingSeen ? 1 : 0,
+              transition: 'opacity 1.2s ease 0.5s',
+            }}
+          >
+            <CollectionBox
+              count={collectionLetters.length}
+              letters={collectionLetters}
+              onOpen={openLetter}
+              mailboxCount={mailboxIds.length}
+              deskCount={deskLetters.length}
+              onReturnAll={handleReturnAllTrigger}
+            />
+          </div>
         </div>
       </RoomScene>
 
@@ -176,37 +213,6 @@ export default function Home() {
       </div>
       <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 9 }}>
         <Doodles />
-      </div>
-
-      {/* Mailbox — desk-integrated, left side */}
-      <div style={{
-        position: 'fixed',
-        left: 20,
-        bottom: 20,
-        zIndex: 15,
-        opacity: landingSeen ? 1 : 0,
-        transition: 'opacity 1.2s ease 0.5s',
-      }}>
-        <Mailbox count={mailboxIds.length} onDrop={handleMailboxDrop} />
-      </div>
-
-      {/* Collection Box — desk-integrated, right side */}
-      <div style={{
-        position: 'fixed',
-        right: 20,
-        bottom: 20,
-        zIndex: 15,
-        opacity: landingSeen ? 1 : 0,
-        transition: 'opacity 1.2s ease 0.5s',
-      }}>
-        <CollectionBox
-          count={collectionLetters.length}
-          letters={collectionLetters}
-          onOpen={openLetter}
-          mailboxCount={mailboxIds.length}
-          deskCount={deskLetters.length}
-          onReturnAll={handleReturnAllTrigger}
-        />
       </div>
 
       {/* Title — integrated into the room */}

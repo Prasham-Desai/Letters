@@ -61,8 +61,10 @@ const CollectionBox = memo(function CollectionBox({ count, letters, onOpen, mail
             </linearGradient>
           </defs>
 
-          {/* Desk contact shadow */}
-          <ellipse cx="42" cy="80" rx="32" ry="4" fill="rgba(40,20,8,0.25)"/>
+          {/* Shadow cast on the 3D desk */}
+          <foreignObject x="0" y="60" width="84" height="40">
+            <div style={{ width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', filter: 'blur(8px)', borderRadius: '50%', transform: 'rotateX(60deg) scale(1.2, 0.4)' }} />
+          </foreignObject>
 
           {/* Box body — layered wood construction */}
           <rect x="6" y="34" width="72" height="42" rx="3" fill="url(#chest-wood)"/>

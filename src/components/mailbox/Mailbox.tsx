@@ -61,8 +61,10 @@ export default function Mailbox({ count, onDrop }: Props) {
             </linearGradient>
           </defs>
 
-          {/* Desk contact shadow */}
-          <ellipse cx="50" cy="78" rx="40" ry="6" fill="rgba(40,20,8,0.3)"/>
+          {/* Shadow cast on the 3D desk */}
+          <foreignObject x="0" y="60" width="100" height="40">
+            <div style={{ width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', filter: 'blur(8px)', borderRadius: '50%', transform: 'rotateX(60deg) scale(1.2, 0.4)' }} />
+          </foreignObject>
 
           {/* Back panel */}
           <rect x="10" y="20" width="80" height="50" rx="3" fill="url(#tray-wood-dark)"/>

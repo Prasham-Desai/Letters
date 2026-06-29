@@ -78,9 +78,18 @@ const Desk = memo(function Desk({
     if (newLetters.length > 0 && allPlaced) {
       const flights = newLetters.map(letter => {
         const p = placed.find(p => p.id === letter.id)!;
-        const deskRect = surfaceRef.current!.getBoundingClientRect();
         const mailboxRect = mailboxRef.current!.getBoundingClientRect();
-        const endRect = new DOMRect(deskRect.left + p.x, deskRect.top + p.y, p.width, p.height);
+        
+        // Find the actual DOM node of the envelope to get its screen-space rect after 3D transforms
+        const envElement = document.getElementById(`envelope-${letter.id}`);
+        let endRect = new DOMRect(0, 0, p.width, p.height);
+        if (envElement) {
+          endRect = envElement.getBoundingClientRect();
+        } else {
+          // Fallback if not mounted for some reason
+          const deskRect = surfaceRef.current!.getBoundingClientRect();
+          endRect = new DOMRect(deskRect.left + p.x, deskRect.top + p.y, p.width, p.height);
+        }
         
         return {
           envelope: p,
