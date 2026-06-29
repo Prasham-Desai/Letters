@@ -58,9 +58,10 @@ export default function Home() {
   const handleLandingComplete = useCallback(() => setLandingSeen(true), [setLandingSeen]);
 
   const handleMailboxDrop = useCallback(() => {
-    const toDrop = mailboxIds.slice(0, DROP_COUNT);
+    const spaceLeft = Math.max(0, DROP_COUNT - deskIds.length);
+    const toDrop = mailboxIds.slice(0, spaceLeft);
     if (toDrop.length > 0) dropToDesk(toDrop);
-  }, [mailboxIds, dropToDesk]);
+  }, [mailboxIds, deskIds.length, dropToDesk]);
 
   const openLetter = useCallback(async (letter: LetterMeta) => {
     letterOpen.current = true;

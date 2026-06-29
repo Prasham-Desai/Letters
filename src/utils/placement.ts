@@ -46,40 +46,26 @@ export function placeEnvelopes(
 
   const placed: PlacedEnvelope[] = [];
 
-  // Divide desk into loose zones
-  const cols = isMobile ? 2 : 3;
-  const rows = Math.ceil(letters.length / cols);
-  const zoneW = containerWidth / cols;
-  const zoneH = containerHeight / rows;
-
-  letters.forEach((letter, i) => {
+  letters.forEach((letter) => {
     const rand = seededRandom(stringToSeed(letter.id));
 
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-
-    const baseX = col * zoneW + zoneW * 0.1;
-    const baseY = row * zoneH + zoneH * 0.1;
-    const maxX = col * zoneW + zoneW * 0.9 - W;
-    const maxY = row * zoneH + zoneH * 0.9 - H;
-
-    let x = baseX + rand() * Math.max(0, maxX - baseX);
-    let y = baseY + rand() * Math.max(0, maxY - baseY);
-
-    // Clamp to container
-    x = Math.max(8, Math.min(containerWidth - W - 8, x));
-    y = Math.max(8, Math.min(containerHeight - H - 8, y));
-
-    // Try to resolve overlaps
     let attempts = 0;
-    const candidate: Rect = { x, y, width: W, height: H };
-    while (attempts < 20) {
-      const hasOverlap = placed.some(p => overlaps(candidate, p));
-      if (!hasOverlap) break;
-      candidate.x = baseX + rand() * Math.max(0, maxX - baseX);
-      candidate.y = baseY + rand() * Math.max(0, maxY - baseY);
-      candidate.x = Math.max(8, Math.min(containerWidth - W - 8, candidate.x));
-      candidate.y = Math.max(8, Math.min(containerHeight - H - 8, candidate.y));
+    let hasOverlap = true;
+    
+    // Default candidate if we fail to resolve overlap
+    const candidate: Rect = { x: 0, y: 0, width: W, height: H };
+
+    while (hasOverlap && attempts < 150) {
+      // Pick any spot on the desk
+      candidate.x = 12 + rand() * (containerWidth - W - 24);
+      candidate.y = 12 + rand() * (containerHeight - H - 24);
+      
+      // Clamp to be strictly within desk bounds just to be safe
+      candidate.x = Math.max(12, Math.min(containerWidth - W - 12, candidate.x));
+      candidate.y = Math.max(12, Math.min(containerHeight - H - 12, candidate.y));
+
+      // Check if it overlaps heavily with existing letters (allow slight overlap by reducing padding to 12)
+      hasOverlap = placed.some(p => overlaps(candidate, p, 12));
       attempts++;
     }
 
