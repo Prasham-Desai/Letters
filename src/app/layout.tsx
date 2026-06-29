@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 import { AnimationProvider } from '@/contexts/AnimationContext';
+import { EnvironmentProvider } from '@/contexts/EnvironmentContext';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -25,9 +26,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="antialiased">
-        <AnimationProvider>
-          {children}
-        </AnimationProvider>
+        <EnvironmentProvider>
+          <AnimationProvider>
+            {children}
+          </AnimationProvider>
+        </EnvironmentProvider>
       </body>
     </html>
   );

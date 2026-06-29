@@ -3,8 +3,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { LetterMeta } from '@/types/letter';
 import { getLetterIndex } from '@/lib/letters';
 import { useLetterState } from '@/hooks/useLetterState';
-import { useTimeOfDay } from '@/hooks/useTimeOfDay';
 import { useAnimation } from '@/contexts/AnimationContext';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
 import LandingExperience from '@/components/loading/LandingExperience';
 import Desk from '@/components/desk/Desk';
 import Mailbox from '@/components/mailbox/Mailbox';
@@ -14,6 +14,7 @@ import CustomCursor from '@/components/cursor/CustomCursor';
 import DustParticles from '@/components/ambience/DustParticles';
 import AmbientEvents from '@/components/ambience/AmbientEvents';
 import Doodles from '@/components/doodles/Doodle';
+import RoomScene from '@/components/environment/RoomScene';
 
 const DROP_COUNT = 5;
 
@@ -28,7 +29,7 @@ export default function Home() {
   const deskRef  = useRef<HTMLDivElement>(null);
   const letterOpen = useRef(false);
 
-  const timeOfDay = useTimeOfDay();
+  const env = useEnvironment();
   const { flyEnvelope, collectionBoxRef, mailboxRef, flyMultiple } = useAnimation();
 
   const {
@@ -47,15 +48,13 @@ export default function Home() {
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!deskRef.current || letterOpen.current) return;
-      const x = (e.clientX / window.innerWidth  - 0.5) * 9;
-      const y = (e.clientY / window.innerHeight - 0.5) * 5;
-      deskRef.current.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+      const x = (e.clientX / window.innerWidth  - 0.5) * 6;
+      const y = (e.clientY / window.innerHeight - 0.5) * 3;
+      deskRef.current.style.transform = `translate(${x}px, ${y}px)`;
     };
     window.addEventListener('mousemove', onMove, { passive: true });
     return () => window.removeEventListener('mousemove', onMove);
   }, []);
-
-
 
   const handleLandingComplete = useCallback(() => setLandingSeen(true), [setLandingSeen]);
 
@@ -69,7 +68,7 @@ export default function Home() {
     letterOpen.current = true;
     // Freeze desk parallax at center
     if (deskRef.current) {
-      deskRef.current.style.transform = 'translate(-50%, -50%)';
+      deskRef.current.style.transform = 'translate(0px, 0px)';
     }
     const file = letter.file.replace('.md', '');
     const res  = await fetch(`/letters/${file}.md`);
@@ -86,7 +85,6 @@ export default function Home() {
         const startRect = new DOMRect(cx - 80, cy - 55, 160, 110);
         const endRect = collectionBoxRef.current.getBoundingClientRect();
         
-        // We simulate a PlacedEnvelope just for rendering the flight clone
         const pEnv = { 
           ...activeLetter, 
           x: 0, y: 0, deskW: 0, deskH: 0, width: 160, height: 110, 
@@ -127,7 +125,7 @@ export default function Home() {
       startRect,
       endRect,
       type: 'COLLECTION_TO_MAILBOX' as const,
-      onComplete: () => {}, // individual completion callback
+      onComplete: () => {},
     }));
 
     flyMultiple(flights, 80, () => {
@@ -146,95 +144,41 @@ export default function Home() {
       {/* Landing — only first visit */}
       {!landingSeen && <LandingExperience onComplete={handleLandingComplete} />}
 
-      {/* Ambient layers */}
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
+      {/* ── ROOM SCENE — immersive environment ── */}
+      <RoomScene visible={landingSeen}>
+        {/* This is the envelope area inside the desk surface */}
+        <div
+          ref={deskRef}
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            willChange: 'transform',
+          }}
+        >
+          {letters.length > 0 && (
+            <Desk
+              deskLetters={deskLetters}
+              onEnvelopeClick={openLetter}
+              openedLetterIds={collectionIds}
+              activeLetterId={activeLetter?.id}
+            />
+          )}
+        </div>
+      </RoomScene>
+
+      {/* Ambient layers (above room, below UI) */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 8 }}>
         <DustParticles />
       </div>
-      <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 2 }}>
+      <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 9 }}>
         <AmbientEvents />
       </div>
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 2 }}>
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 9 }}>
         <Doodles />
       </div>
 
-      {/* ── DESK — parallax via direct DOM, no React state ── */}
-      <div
-        ref={deskRef}
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
-          width: 'calc(100vw + 60px)',
-          height: 'calc(100vh + 60px)',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 10,
-          willChange: 'transform',
-          opacity: landingSeen ? 1 : 0,
-          transition: 'opacity 0.8s ease',
-        }}
-      >
-        {/* Desk surface (Full bleed sleek tray) */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: [
-            /* Fine walnut grain */
-            'repeating-linear-gradient(88deg, transparent, transparent 2px, rgba(90,60,20,0.05) 2px, rgba(90,60,20,0.05) 3px)',
-            /* Medium grain variation */
-            'repeating-linear-gradient(91deg, transparent, transparent 8px, rgba(60,40,12,0.035) 8px, rgba(60,40,12,0.035) 9px)',
-            /* Primary walnut tone */
-            'linear-gradient(162deg, #c89850 0%, #b88838 18%, #a87828 38%, #b08040 58%, #b88c48 75%, #c49858 100%)',
-          ].join(', '),
-          boxShadow: 'inset 0 0 120px rgba(40,20,8,0.3)',
-          overflow: 'hidden',
-        }}>
-          {/* Top-left directional light highlight */}
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-            background: 'radial-gradient(ellipse 70% 60% at 20% 15%, rgba(255,220,140,0.18) 0%, transparent 60%)',
-          }} aria-hidden="true" />
-
-          {/* Vignette */}
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-            background: 'radial-gradient(ellipse 85% 78% at 50% 50%, transparent 40%, rgba(30,15,5,0.3) 100%)',
-          }} aria-hidden="true" />
-
-          {/* Time-of-day warm tint */}
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-            background: timeOfDay === 'night'
-              ? 'rgba(30,40,80,0.14)'
-              : timeOfDay === 'evening'
-              ? 'rgba(180,100,40,0.10)'
-              : timeOfDay === 'morning'
-              ? 'rgba(255,200,100,0.07)'
-              : 'transparent',
-            transition: 'background 3s ease',
-          }} aria-hidden="true" />
-
-          {/* Paper texture noise overlay */}
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'0.02\'/%3E%3C/svg%3E")',
-            backgroundSize: '200px 200px',
-          }} aria-hidden="true" />
-
-          {/* Desk content */}
-          <div style={{ position: 'relative', zIndex: 2, width: '100%', height: '100%' }}>
-            {letters.length > 0 && (
-              <Desk
-                deskLetters={deskLetters}
-                onEnvelopeClick={openLetter}
-                openedLetterIds={collectionIds}
-                activeLetterId={activeLetter?.id}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Mailbox (Fixed Left) */}
+      {/* Mailbox — desk-integrated, left side */}
       <div style={{
         position: 'fixed',
         left: 20,
@@ -246,7 +190,7 @@ export default function Home() {
         <Mailbox count={mailboxIds.length} onDrop={handleMailboxDrop} />
       </div>
 
-      {/* Collection Box (Fixed Right) */}
+      {/* Collection Box — desk-integrated, right side */}
       <div style={{
         position: 'fixed',
         right: 20,
@@ -265,15 +209,18 @@ export default function Home() {
         />
       </div>
 
-      {/* Title */}
+      {/* Title — integrated into the room */}
       <div style={{
         position: 'fixed', top: 32, left: 40,
         fontFamily: 'var(--font-heading)', fontSize: '2.8rem',
-        color: '#4a3622',
-        textShadow: '0 2px 10px rgba(255,255,255,0.9), 0 1px 3px rgba(255,255,255,0.8), 0 4px 20px rgba(255,255,255,0.5)',
+        color: env.isNight ? '#d4c8b0' : '#4a3622',
+        textShadow: env.isNight
+          ? '0 2px 10px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.4)'
+          : '0 2px 10px rgba(255,255,255,0.9), 0 1px 3px rgba(255,255,255,0.8), 0 4px 20px rgba(255,255,255,0.5)',
         letterSpacing: '0.02em',
-        zIndex: 5, pointerEvents: 'none', userSelect: 'none',
+        zIndex: 12, pointerEvents: 'none', userSelect: 'none',
         opacity: 0.95,
+        transition: 'color 3s ease, text-shadow 3s ease',
       }} aria-hidden="true">
         when you need me
       </div>
