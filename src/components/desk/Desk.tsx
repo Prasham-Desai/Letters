@@ -20,6 +20,7 @@ interface Props {
   onCollectionOpen: (letter: LetterMeta) => void;
   onReturnAll: () => void;
   openedLetterIds: string[];
+  activeLetterId?: string;
 }
 
 const Desk = memo(function Desk({
@@ -31,6 +32,7 @@ const Desk = memo(function Desk({
   onCollectionOpen,
   onReturnAll,
   openedLetterIds,
+  activeLetterId,
 }: Props) {
   const surfaceRef = useRef<HTMLDivElement>(null);
   const [deskDimensions, setDeskDimensions] = useState({ W: 0, H: 0 });
@@ -155,7 +157,7 @@ const Desk = memo(function Desk({
             data={env}
             isOpened={openedLetterIds.includes(env.id)}
             onClick={() => onEnvelopeClick(env)}
-            isHidden={hiddenEnvelopeIds.has(env.id) || localHidden.has(env.id)}
+            isHidden={hiddenEnvelopeIds.has(env.id) || localHidden.has(env.id) || env.id === activeLetterId}
           />
         ))}
       </AnimatePresence>

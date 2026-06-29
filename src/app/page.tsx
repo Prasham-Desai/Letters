@@ -78,9 +78,10 @@ export default function Home() {
 
   const handleClose = useCallback(() => {
     if (activeLetter) {
-      const envelopeEl = document.getElementById(`envelope-${activeLetter.id}`);
-      if (envelopeEl && collectionBoxRef.current) {
-        const startRect = envelopeEl.getBoundingClientRect();
+      if (collectionBoxRef.current) {
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        const startRect = new DOMRect(cx - 80, cy - 55, 160, 110);
         const endRect = collectionBoxRef.current.getBoundingClientRect();
         
         // We simulate a PlacedEnvelope just for rendering the flight clone
@@ -282,6 +283,7 @@ export default function Home() {
                 onCollectionOpen={openLetter}
                 onReturnAll={resetLetters}
                 openedLetterIds={collectionIds}
+                activeLetterId={activeLetter?.id}
               />
             )}
           </div>

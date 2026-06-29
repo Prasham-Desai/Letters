@@ -200,13 +200,19 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
   const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
   
   // Dynamic arc height — proportional to distance, clamped
-  const arcHeight = Math.min(180, Math.max(80, distance * 0.35));
+  // Lower arc for moving to collection so it feels more like sliding in than jumping
+  const isToCollection = type === 'DESK_TO_COLLECTION';
+  const arcHeight = isToCollection
+    ? Math.min(80, Math.max(40, distance * 0.15))
+    : Math.min(180, Math.max(80, distance * 0.35));
 
   const yPeak = Math.min(0, deltaY) - arcHeight;
   
   // Custom trajectories based on flight type
   const yKeyframes = isMailbox
     ? [0, -40, -50, yPeak, deltaY] // Extraction, Suspension, Flight, Landing
+    : isToCollection
+    ? [0, yPeak, deltaY] // Smoother 3-point
     : [0, yPeak, deltaY];
 
   const xKeyframes = isMailbox
@@ -221,35 +227,39 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
     ? [0, 0, travelAngle * 0.3, baseRotation + (travelAngle * 0.2), baseRotation]
     : isReturn
     ? [baseRotation, baseRotation - 30, baseRotation - 45]
-    : [baseRotation, baseRotation - 15, baseRotation + 30];
+    : [baseRotation, baseRotation - 10, baseRotation + 15]; // Gentle tilt when going to collection
 
   // Depth scaling — strictly 0.3 in boxes, 1.0 on desk
   const scaleKeyframes = isMailbox
     ? [0.3, 0.35, 0.4, 0.85, 1.0]
     : isReturn
     ? [0.3, 0.6, 0.3]
-    : [1.0, 0.7, 0.3];
+    : [1.0, 0.8, 0.3]; // Fade size more gracefully
 
   // Opacity: stays fully visible until the very end of collection drop
   const opacityKeyframes = isMailbox
     ? [1, 1, 1, 1, 1]
     : isReturn
     ? [1, 0.9, 0]
-    : [1, 1, 0.9];
+    : [1, 1, 0.5]; // Fade out as it enters box
 
   const times = isMailbox 
     ? [0, 0.15, 0.25, 0.8, 1.0] 
+    : isToCollection
+    ? [0, 0.4, 1.0]
     : [0, 0.5, 1.0];
     
   const ease = isMailbox
     ? ["easeOut", "easeInOut", "easeOut", "easeIn"] // 4 segments
+    : isToCollection
+    ? ["easeOut", "easeInOut"] // Smoother float into the box
     : ["easeOut", "easeIn"]; // 2 segments
     
   const duration = isMailbox 
     ? 0.95 
     : isReturn 
     ? 0.5 
-    : 0.75;
+    : 0.85; // Slightly longer for smoother slide
 
   return (
     <motion.div
