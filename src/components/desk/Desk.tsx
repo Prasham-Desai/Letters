@@ -60,20 +60,23 @@ const Desk = memo(function Desk({
     // Detect newly dropped letters (from mailbox to desk)
     const newLetters = deskLetters.filter(l => !prevDeskLettersRef.current.find(p => p.id === l.id));
     
-    newLetters.forEach(letter => {
-      // Find where it's placed on the desk
-      const p = placed.find(p => p.id === letter.id);
-      if (!p || !surfaceRef.current || !mailboxRef.current) return;
-      
-      const deskRect = surfaceRef.current.getBoundingClientRect();
-      const mailboxRect = mailboxRef.current.getBoundingClientRect();
-      // Calculate final absolute DOM rect (assuming ~160x110 for horizontal, 110x160 for vertical based on dimensions)
-      const endRect = new DOMRect(deskRect.left + p.x, deskRect.top + p.y, p.width, p.height);
-      
-      flyEnvelope(p, mailboxRect, endRect, 'MAILBOX_TO_DESK', () => {});
-    });
+    // We must wait until `placed` has these new letters before triggering the flight.
+    const allPlaced = newLetters.every(l => placed.find(p => p.id === l.id));
+    
+    if (newLetters.length > 0 && allPlaced) {
+      newLetters.forEach(letter => {
+        const p = placed.find(p => p.id === letter.id);
+        if (!p || !surfaceRef.current || !mailboxRef.current) return;
+        
+        const deskRect = surfaceRef.current.getBoundingClientRect();
+        const mailboxRect = mailboxRef.current.getBoundingClientRect();
+        const endRect = new DOMRect(deskRect.left + p.x, deskRect.top + p.y, p.width, p.height);
+        
+        flyEnvelope(p, mailboxRect, endRect, 'MAILBOX_TO_DESK', () => {});
+      });
 
-    prevDeskLettersRef.current = deskLetters;
+      prevDeskLettersRef.current = deskLetters;
+    }
   }, [deskLetters, placed, flyEnvelope, mailboxRef]);
 
   // Empty desk hint

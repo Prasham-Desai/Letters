@@ -226,10 +226,10 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
 
   // Depth scaling
   const scaleKeyframes = isMailbox
-    ? [0.75, 0.8, 0.88, 0.95, 1.0]
+    ? [0.5, 0.7, 0.85, 0.95, 1.0]
     : isReturn
-    ? [0.75, 0.8, 0.85, 0.6, 0.5]
-    : [1.0, 0.95, 0.88, 0.8, 0.75];
+    ? [0.5, 0.65, 0.75, 0.6, 0.5]
+    : [1.0, 0.9, 0.75, 0.6, 0.5];
 
   // Opacity: stays fully visible until the very end of collection drop
   const opacityKeyframes = isMailbox
