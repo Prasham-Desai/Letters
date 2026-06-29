@@ -293,10 +293,12 @@ export default function Home() {
       {/* Title */}
       <div style={{
         position: 'fixed', top: 32, left: 40,
-        fontFamily: 'var(--font-heading)', fontSize: '2.2rem',
-        color: 'rgba(90,68,38,0.7)',
-        textShadow: '0 2px 4px rgba(255,255,255,0.4)',
+        fontFamily: 'var(--font-heading)', fontSize: '2.8rem',
+        color: '#4a3622',
+        textShadow: '0 2px 10px rgba(255,255,255,0.9), 0 1px 3px rgba(255,255,255,0.8), 0 4px 20px rgba(255,255,255,0.5)',
+        letterSpacing: '0.02em',
         zIndex: 5, pointerEvents: 'none', userSelect: 'none',
+        opacity: 0.95,
       }} aria-hidden="true">
         when you need me
       </div>
