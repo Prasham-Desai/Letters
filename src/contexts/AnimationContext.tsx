@@ -131,17 +131,31 @@ export function useAnimation() {
 function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: () => void }) {
   const { startRect, endRect, type, envelope } = flight;
   
-  const deltaX = endRect.left - startRect.left;
-  const deltaY = endRect.top - startRect.top;
+  const isMailbox = type === 'MAILBOX_TO_DESK';
+
+  // Always use the physical dimensions of the envelope for the wrapper
+  const envWidth = envelope.width;
+  const envHeight = envelope.height;
+
+  // Calculate center points of start and end rects
+  const startCenterX = startRect.left + startRect.width / 2;
+  const startCenterY = startRect.top + startRect.height / 2;
+  
+  const endCenterX = endRect.left + endRect.width / 2;
+  const endCenterY = endRect.top + endRect.height / 2;
+
+  // Delta distance from start center to end center
+  const deltaX = endCenterX - startCenterX;
+  const deltaY = endCenterY - startCenterY;
+  
   const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
   
   // Dynamic arc height — proportional to distance, clamped
   const arcHeight = Math.min(180, Math.max(80, distance * 0.35));
-  const isMailbox = type === 'MAILBOX_TO_DESK';
 
   // 5-point trajectory for natural curved path
   const yKeyframes = isMailbox
-    ? [30, -arcHeight * 0.4, -arcHeight, deltaY * 0.3 - arcHeight * 0.2, deltaY]
+    ? [0, -arcHeight * 0.4, -arcHeight, deltaY * 0.3 - arcHeight * 0.2, deltaY]
     : [0, -arcHeight * 0.3, -arcHeight * 0.6, deltaY * 0.4 - arcHeight * 0.15, deltaY];
   
   const xKeyframes = isMailbox
@@ -151,37 +165,44 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
   // Momentum-based rotation — banking in the direction of travel
   const travelAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
   const baseRotation = envelope.rotation;
+  
+  // Smooth rotation during flight
   const rotKeyframes = isMailbox
-    ? [baseRotation - 30, baseRotation - 15, baseRotation + 8, baseRotation + 3, baseRotation]
-    : [baseRotation, baseRotation - 8, baseRotation - 18, baseRotation + travelAngle * 0.1, baseRotation + 30];
+    ? [baseRotation - 30, baseRotation - 10, baseRotation + 5, baseRotation + 2, baseRotation]
+    : [baseRotation, baseRotation - 5, baseRotation - 15, baseRotation + travelAngle * 0.1, baseRotation + 30];
 
-  // Depth scaling — envelope feels larger at peak of arc
+  // Depth scaling — smooth transition per user requirements
+  // Mailbox to Desk: 0.75 -> 1.0
+  // Desk to Collection: 1.0 -> 0.75
   const scaleKeyframes = isMailbox
-    ? [0.5, 0.85, 1.12, 1.06, 1.0]
-    : [1.0, 1.06, 1.12, 0.8, 0.35];
+    ? [0.75, 0.8, 0.88, 0.95, 1.0]
+    : [1.0, 0.95, 0.88, 0.8, 0.75];
 
-  // Shadow strength follows altitude
-  const opacityKeyframes = [1, 1, 1, 1, isMailbox ? 1 : 0.85];
+  // Opacity: stays fully visible until the very end of collection drop
+  const opacityKeyframes = isMailbox
+    ? [1, 1, 1, 1, 1]
+    : [1, 1, 1, 1, 0.9];
 
   return (
     <motion.div
       style={{
         position: 'fixed',
-        left: startRect.left,
-        top: startRect.top,
-        width: isMailbox ? endRect.width : startRect.width,
-        height: isMailbox ? endRect.height : startRect.height,
+        left: startCenterX,
+        top: startCenterY,
+        width: envWidth,
+        height: envHeight,
+        margin: `${-envHeight / 2}px 0 0 ${-envWidth / 2}px`, // Perfect mathematical center
         zIndex: 9999,
         pointerEvents: 'none',
         transformOrigin: 'center center',
-        filter: 'drop-shadow(0 8px 16px rgba(40,24,8,0.25))',
+        filter: 'drop-shadow(0 12px 24px rgba(40,24,8,0.3))',
       }}
       initial={{ 
         x: xKeyframes[0], 
         y: yKeyframes[0],
         scale: scaleKeyframes[0], 
         rotate: rotKeyframes[0],
-        opacity: 1,
+        opacity: opacityKeyframes[0],
       }}
       animate={{ 
         x: xKeyframes, 
@@ -191,9 +212,9 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
         opacity: opacityKeyframes,
       }}
       transition={{
-        duration: 0.7,
+        duration: 0.75, // Slightly longer for smoother, less abrupt flight
         ease: [0.25, 0.1, 0.25, 1], // Smooth cubic ease — fast start, gentle landing
-        times: [0, 0.2, 0.5, 0.8, 1],
+        times: [0, 0.25, 0.5, 0.75, 1],
       }}
       onAnimationComplete={onComplete}
     >

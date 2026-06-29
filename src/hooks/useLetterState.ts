@@ -24,6 +24,10 @@ export function useLetterState(allLetterIds: string[]) {
     setLocations({ ...locations, [id]: 'collection' });
   };
 
+  const resetLetters = () => {
+    setLocations({});
+  };
+
   return {
     getLocation,
     mailboxIds,
@@ -31,5 +35,6 @@ export function useLetterState(allLetterIds: string[]) {
     collectionIds,
     dropToDesk,
     moveToCollection,
+    resetLetters,
   };
 }

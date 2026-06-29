@@ -135,9 +135,9 @@ const Envelope = memo(function Envelope({ data, isOpened, onClick, dropDelay = 0
         {/* Wax seal — perfectly centered at flap intersection */}
         <div style={{
           position: 'absolute',
-          top: `${data.height * 0.44 - 24}px`, /* Exactly at the V-fold apex */
+          top: `${data.height * 0.44}px`, /* Exactly at the V-fold apex */
           left: '50%',
-          transform: 'translateX(-50%)',
+          transform: 'translate(-50%, -50%)',
           zIndex: 3,
         }}>
           <WaxSeal type={data.sealType} color={data.seal} cracked={isOpened} size={48} />
