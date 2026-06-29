@@ -10,10 +10,11 @@ interface Props {
   letters: LetterMeta[];
   onOpen: (letter: LetterMeta) => void;
   mailboxCount: number;
+  deskCount: number;
   onReturnAll: () => void;
 }
 
-const CollectionBox = memo(function CollectionBox({ count, letters, onOpen, mailboxCount, onReturnAll }: Props) {
+const CollectionBox = memo(function CollectionBox({ count, letters, onOpen, mailboxCount, deskCount, onReturnAll }: Props) {
   const [panelOpen, setPanelOpen] = useState(false);
   const { collectionBoxRef, isCollectionOpening } = useAnimation();
 
@@ -220,8 +221,8 @@ const CollectionBox = memo(function CollectionBox({ count, letters, onOpen, mail
                   </p>
                 </div>
                 
-                {/* Reset button only visible if mailbox is empty */}
-                {mailboxCount === 0 && (
+                {/* Reset button only visible if ALL letters are in collection (mailbox and desk empty) */}
+                {mailboxCount === 0 && deskCount === 0 && (
                   <button
                     onClick={handleReturnAll}
                     style={{

@@ -215,6 +215,7 @@ const Desk = memo(function Desk({
           letters={collectionLetters}
           onOpen={onCollectionOpen}
           mailboxCount={mailboxCount}
+          deskCount={deskLetters.length}
           onReturnAll={handleReturnAllTrigger}
         />
       </div>

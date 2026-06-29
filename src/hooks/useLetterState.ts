@@ -8,7 +8,15 @@ export function useLetterState(allLetterIds: string[]) {
     'wnym-locations-v2', {}
   );
 
-  const getLocation = (id: string): LetterLocation => locations[id] ?? 'mailbox';
+  const deskIdsUncapped = allLetterIds.filter(id => locations[id] === 'desk');
+  const validDeskIds = new Set(deskIdsUncapped.slice(0, 5));
+
+  const getLocation = (id: string): LetterLocation => {
+    const loc = locations[id] ?? 'mailbox';
+    // If there are more than 5 letters on the desk from old localStorage, push overflow back to mailbox
+    if (loc === 'desk' && !validDeskIds.has(id)) return 'mailbox';
+    return loc;
+  };
 
   const mailboxIds  = allLetterIds.filter(id => getLocation(id) === 'mailbox');
   const deskIds     = allLetterIds.filter(id => getLocation(id) === 'desk');
