@@ -84,16 +84,22 @@ const Desk = memo(function Desk({
     const allPlaced = newLetters.every(l => placed.find(p => p.id === l.id));
     
     if (newLetters.length > 0 && allPlaced) {
-      newLetters.forEach(letter => {
-        const p = placed.find(p => p.id === letter.id);
-        if (!p || !surfaceRef.current || !mailboxRef.current) return;
-        
-        const deskRect = surfaceRef.current.getBoundingClientRect();
-        const mailboxRect = mailboxRef.current.getBoundingClientRect();
+      const flights = newLetters.map(letter => {
+        const p = placed.find(p => p.id === letter.id)!;
+        const deskRect = surfaceRef.current!.getBoundingClientRect();
+        const mailboxRect = mailboxRef.current!.getBoundingClientRect();
         const endRect = new DOMRect(deskRect.left + p.x, deskRect.top + p.y, p.width, p.height);
         
-        flyEnvelope(p, mailboxRect, endRect, 'MAILBOX_TO_DESK', () => {});
+        return {
+          envelope: p,
+          startRect: mailboxRect,
+          endRect,
+          type: 'MAILBOX_TO_DESK' as const,
+          onComplete: () => {}
+        };
       });
+
+      flyMultiple(flights, 150, () => {});
 
       prevDeskLettersRef.current = deskLetters;
       // Clear local hidden state since AnimationContext's hiddenEnvelopeIds will have taken over

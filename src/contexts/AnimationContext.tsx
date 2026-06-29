@@ -48,12 +48,6 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
     isProcessing.current = true;
     const flight = flightQueue.current.shift()!;
     
-    setHiddenEnvelopeIds(prev => {
-      const next = new Set(prev);
-      next.add(flight.envelope.id);
-      return next;
-    });
-
     if (flight.type === 'MAILBOX_TO_DESK') {
       setIsMailboxOpening(true);
     } else if (flight.type === 'DESK_TO_COLLECTION') {
@@ -68,6 +62,13 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
 
   const flyEnvelope = useCallback((envelope: PlacedEnvelope, startRect: DOMRect, endRect: DOMRect, type: FlightType, onComplete: () => void) => {
     const flightId = Math.random().toString(36).substr(2, 9);
+    
+    setHiddenEnvelopeIds(prev => {
+      const next = new Set(prev);
+      next.add(envelope.id);
+      return next;
+    });
+
     flightQueue.current.push({ id: flightId, envelope, startRect, endRect, type, onComplete });
     processQueue();
   }, [processQueue]);
@@ -76,6 +77,13 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
     if (flightsInput.length === 0) return;
     
     const flights: Flight[] = flightsInput.map(f => ({ ...f, id: Math.random().toString(36).substr(2, 9) }));
+    
+    // Add all to hidden immediately
+    setHiddenEnvelopeIds(prev => {
+      const next = new Set(prev);
+      flights.forEach(f => next.add(f.envelope.id));
+      return next;
+    });
     
     // Open all relevant doors for mass flights
     setIsCollectionOpening(true);
@@ -96,12 +104,6 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
               onAllComplete();
             }
           };
-          
-          setHiddenEnvelopeIds(prev => {
-            const next = new Set(prev);
-            next.add(flight.envelope.id);
-            return next;
-          });
 
           setActiveFlights(prev => [...prev, flight]);
         }, i * staggerMs);
