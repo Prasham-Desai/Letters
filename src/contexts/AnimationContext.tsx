@@ -50,14 +50,15 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
     
     if (flight.type === 'MAILBOX_TO_DESK') {
       setIsMailboxOpening(true);
+      setTimeout(() => {
+        setActiveFlights([flight]);
+      }, 300);
     } else if (flight.type === 'DESK_TO_COLLECTION') {
       setIsCollectionOpening(true);
-    }
-
-    setTimeout(() => {
       setActiveFlights([flight]);
-    }, 300);
-
+    } else {
+      setActiveFlights([flight]);
+    }
   }, []);
 
   const flyEnvelope = useCallback((envelope: PlacedEnvelope, startRect: DOMRect, endRect: DOMRect, type: FlightType, onComplete: () => void) => {

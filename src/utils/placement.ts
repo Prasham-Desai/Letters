@@ -46,36 +46,59 @@ export function placeEnvelopes(
 
   const placed: PlacedEnvelope[] = [];
 
+  // 8 invisible positions (cells)
+  const cols = isMobile ? 2 : 4;
+  const rows = isMobile ? 4 : 2;
+  const slotW = containerWidth / cols;
+  const slotH = containerHeight / rows;
+
+  const availableSlots: { x: number, y: number }[] = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+       // exact center of the cell
+       let cx = c * slotW + (slotW - W) / 2;
+       let cy = r * slotH + (slotH - H) / 2;
+       availableSlots.push({ x: cx, y: cy });
+    }
+  }
+
   letters.forEach((letter) => {
     const rand = seededRandom(stringToSeed(letter.id));
 
-    let attempts = 0;
-    let hasOverlap = true;
-    
-    // Default candidate if we fail to resolve overlap
-    const candidate: Rect = { x: 0, y: 0, width: W, height: H };
+    if (availableSlots.length > 0) {
+      // Pick a random available slot
+      const idx = Math.floor(rand() * availableSlots.length);
+      const slot = availableSlots[idx];
+      availableSlots.splice(idx, 1); // remove so it's not reused (no overlap)
 
-    while (hasOverlap && attempts < 150) {
-      // Pick any spot on the desk
-      candidate.x = 12 + rand() * (containerWidth - W - 24);
-      candidate.y = 12 + rand() * (containerHeight - H - 24);
-      
-      // Clamp to be strictly within desk bounds just to be safe
-      candidate.x = Math.max(12, Math.min(containerWidth - W - 12, candidate.x));
-      candidate.y = Math.max(12, Math.min(containerHeight - H - 12, candidate.y));
+      // Organic jitter bounded within the cell so they never overlap
+      const jitterX = (rand() - 0.5) * Math.max(0, slotW - W);
+      const jitterY = (rand() - 0.5) * Math.max(0, slotH - H);
 
-      // Check if it overlaps heavily with existing letters (allow slight overlap by reducing padding to 12)
-      hasOverlap = placed.some(p => overlaps(candidate, p, 12));
-      attempts++;
+      let finalX = slot.x + jitterX;
+      let finalY = slot.y + jitterY;
+
+      // Clamp to container bounds just to be absolutely safe
+      finalX = Math.max(12, Math.min(containerWidth - W - 12, finalX));
+      finalY = Math.max(12, Math.min(containerHeight - H - 12, finalY));
+
+      placed.push({
+        ...letter,
+        x: finalX,
+        y: finalY,
+        width: W,
+        height: H,
+      });
+    } else {
+      // Fallback if more than 8 letters are somehow passed (should be capped at 5)
+      placed.push({
+        ...letter,
+        x: 12,
+        y: 12,
+        width: W,
+        height: H,
+      });
     }
-
-    placed.push({
-      ...letter,
-      x: candidate.x,
-      y: candidate.y,
-      width: W,
-      height: H,
-    });
   });
 
   return placed;
