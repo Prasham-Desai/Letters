@@ -5,8 +5,8 @@ const Chair = memo(function Chair() {
   return (
     <div
       style={{
-        width: '120px',
-        height: '160px',
+        width: '180px',
+        height: '240px',
         pointerEvents: 'none',
         transform: 'rotate(-8deg)',
         transformOrigin: 'bottom left',

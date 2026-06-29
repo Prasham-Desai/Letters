@@ -41,8 +41,8 @@ export function placeEnvelopes(
   containerHeight: number,
   isMobile: boolean
 ): PlacedEnvelope[] {
-  const W = isMobile ? 160 : 200;
-  const H = isMobile ? 110 : 136;
+  const W = isMobile ? 180 : 250;
+  const H = isMobile ? 124 : 170;
 
   const placed: PlacedEnvelope[] = [];
 

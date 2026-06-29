@@ -60,11 +60,8 @@ export default function Mailbox({ count, onDrop }: Props) {
               <stop offset="100%" stopColor="#8a6020"/>
             </linearGradient>
           </defs>
-
-          {/* Shadow cast on the 3D desk */}
-          <foreignObject x="0" y="60" width="100" height="40">
-            <div style={{ width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', filter: 'blur(8px)', borderRadius: '50%', transform: 'rotateX(60deg) scale(1.2, 0.4)' }} />
-          </foreignObject>
+          {/* 2D Contact shadow */}
+          <ellipse cx="50" cy="72" rx="42" ry="7" fill="rgba(0,0,0,0.3)" filter="blur(2px)"/>
 
           {/* Back panel */}
           <rect x="10" y="20" width="80" height="50" rx="3" fill="url(#tray-wood-dark)"/>

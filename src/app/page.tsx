@@ -167,7 +167,6 @@ export default function Home() {
           
           {/* Mailbox — desk-integrated, left side */}
           <div 
-            className="billboard"
             style={{
               position: 'absolute',
               left: '5%',
@@ -175,6 +174,7 @@ export default function Home() {
               zIndex: 15,
               opacity: landingSeen ? 1 : 0,
               transition: 'opacity 1.2s ease 0.5s',
+              transform: 'scale(1.2)', /* Scaled up for foreground presence */
             }}
           >
             <Mailbox count={mailboxIds.length} onDrop={handleMailboxDrop} />
@@ -182,7 +182,6 @@ export default function Home() {
 
           {/* Collection Box — desk-integrated, right side */}
           <div 
-            className="billboard"
             style={{
               position: 'absolute',
               right: '5%',
@@ -190,6 +189,7 @@ export default function Home() {
               zIndex: 15,
               opacity: landingSeen ? 1 : 0,
               transition: 'opacity 1.2s ease 0.5s',
+              transform: 'scale(1.2)', /* Scaled up for foreground presence */
             }}
           >
             <CollectionBox

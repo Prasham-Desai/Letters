@@ -157,54 +157,38 @@ body {
     );
 }
 
-/* ─── 3D Diorama Structure ───────────────────────────── */
-.room-viewport {
+/* ─── 2D Composite Architecture ───────────────────────── */
+.scene-container {
+  position: absolute;
+  inset: -5% -5% -5% -5%; /* allow parallax margin */
+  overflow: hidden;
+  will-change: transform;
+}
+
+.scene-layer {
   position: absolute;
   inset: 0;
-  perspective: 1200px;
-  perspective-origin: 50% 30%;
-  overflow: hidden;
-  transform-style: preserve-3d;
+  pointer-events: none;
+  transform: translate3d(0,0,0); /* Force GPU */
+  will-change: transform, opacity;
 }
 
-.room-world {
-  position: absolute;
-  inset: -20% -20% -20% -20%;
-  transform-style: preserve-3d;
-  /* Slight push back to see the perspective */
-  transform: translateZ(-200px);
-}
-
-.room-wall {
+.scene-wall {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 60%;
-  transform-style: preserve-3d;
-  transform: translateZ(-500px);
-  /* The wall color */
+  height: 35%; /* Background top section */
   background: linear-gradient(to bottom, #4a3a30, #2a201a);
 }
 
-.room-desk-plane {
+.scene-desk {
   position: absolute;
-  top: 50%;
-  left: -10%;
-  right: -10%;
-  bottom: -40%;
-  transform-origin: top center;
-  transform-style: preserve-3d;
-  /* Rotate backwards to form the floor */
-  transform: rotateX(60deg) translateZ(-500px);
-  box-shadow: inset 0 200px 200px -100px rgba(0,0,0,0.8);
-}
-
-.billboard {
-  transform-style: preserve-3d;
-  /* Counter-rotate objects to stand them up vertically on the desk */
-  transform: rotateX(-60deg);
-  transform-origin: bottom center;
+  top: 25%; /* Overlaps wall slightly for depth */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.5); /* Desk dropping shadow on wall */
 }
 
 /* ─── Envelope Papers ────────────────────────────────── */

@@ -6,11 +6,11 @@ const DeskObjects = memo(function DeskObjects() {
   const env = useEnvironment();
 
   return (
-    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', transformStyle: 'preserve-3d' }} aria-hidden="true">
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} aria-hidden="true">
       {/* 1. Pencil Holder & Ink Bottle (Top Left) */}
-      <div className="billboard" style={{ position: 'absolute', top: '15%', left: '10%' }}>
+      <div style={{ position: 'absolute', top: '15%', left: '12%', transform: 'scale(1.3)' }}>
         {/* Shadow cast on the desk */}
-        <div style={{ position: 'absolute', bottom: -10, left: 10, width: 60, height: 20, background: 'rgba(0,0,0,0.4)', borderRadius: '50%', filter: 'blur(5px)', transform: 'rotateX(60deg)' }} />
+        <div style={{ position: 'absolute', bottom: -5, left: 10, width: 50, height: 15, background: 'rgba(0,0,0,0.3)', borderRadius: '50%', filter: 'blur(3px)' }} />
         {/* Ink Bottle */}
         <svg width="25" height="30" viewBox="0 0 25 30" style={{ position: 'absolute', left: 45, top: 20 }}>
           <path d="M 5 30 L 20 30 L 22 15 L 18 10 L 18 5 L 7 5 L 7 10 L 3 15 Z" fill="rgba(100,120,130,0.4)" stroke="#fff" strokeWidth="0.5" />
@@ -37,9 +37,9 @@ const DeskObjects = memo(function DeskObjects() {
         </svg>
       </div>
 
-      {/* 2. Brass Alarm Clock (Top Right) */}
-      <div className="billboard" style={{ position: 'absolute', top: '12%', right: '15%' }}>
-        <div style={{ position: 'absolute', bottom: -10, left: 0, width: 40, height: 15, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', filter: 'blur(5px)', transform: 'rotateX(60deg)' }} />
+      {/* 2. Brass Alarm Clock (Top Center Right) */}
+      <div style={{ position: 'absolute', top: '10%', right: '28%', transform: 'scale(1.2)' }}>
+        <div style={{ position: 'absolute', bottom: -5, left: 0, width: 40, height: 12, background: 'rgba(0,0,0,0.4)', borderRadius: '50%', filter: 'blur(3px)' }} />
         <svg width="40" height="45" viewBox="0 0 40 45">
           {/* Bells */}
           <path d="M 5 15 Q 10 5 20 10" fill="none" stroke="#c4a050" strokeWidth="3" strokeLinecap="round" />
@@ -59,9 +59,9 @@ const DeskObjects = memo(function DeskObjects() {
         </svg>
       </div>
 
-      {/* 3. Coffee Mug (Bottom Left) */}
-      <div className="billboard" style={{ position: 'absolute', bottom: '20%', left: '8%' }}>
-        <div style={{ position: 'absolute', bottom: -10, left: 5, width: 30, height: 12, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', filter: 'blur(5px)', transform: 'rotateX(60deg)' }} />
+      {/* 3. Coffee Mug (Bottom Left Edge) */}
+      <div style={{ position: 'absolute', bottom: '15%', left: '10%', transform: 'scale(1.4)' }}>
+        <div style={{ position: 'absolute', bottom: -5, left: 5, width: 25, height: 10, background: 'rgba(0,0,0,0.4)', borderRadius: '50%', filter: 'blur(3px)' }} />
         {env.isDaytime && (
           <svg width="30" height="20" viewBox="0 0 30 20" style={{ position: 'absolute', top: -15, left: 0, animation: 'steam-rise 3s infinite ease-in-out' }}>
             <path d="M 10 20 Q 5 10 12 5 Q 15 0 10 -5" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" />
@@ -79,8 +79,8 @@ const DeskObjects = memo(function DeskObjects() {
         </svg>
       </div>
 
-      {/* 4. Reading Glasses (Flat on desk - no billboard) */}
-      <div style={{ position: 'absolute', top: '15%', right: '28%', transform: 'rotate(15deg) translateZ(1px)' }}>
+      {/* 4. Reading Glasses (Flat on desk) */}
+      <div style={{ position: 'absolute', top: '25%', left: '25%', transform: 'rotate(15deg) scale(1.3)' }}>
         <div style={{ position: 'absolute', bottom: -2, left: 2, width: 40, height: 8, background: 'rgba(0,0,0,0.2)', borderRadius: '50%', filter: 'blur(2px)' }} />
         <svg width="45" height="20" viewBox="0 0 45 20">
           <circle cx="12" cy="10" r="8" fill="rgba(255,255,255,0.1)" stroke="#e8cc78" strokeWidth="2" />
@@ -92,7 +92,7 @@ const DeskObjects = memo(function DeskObjects() {
       </div>
 
       {/* 5. Sealing Wax & Stamp (Flat on desk) */}
-      <div style={{ position: 'absolute', bottom: '15%', right: '12%', transform: 'rotate(-25deg) translateZ(1px)' }}>
+      <div style={{ position: 'absolute', bottom: '25%', right: '15%', transform: 'rotate(-25deg) scale(1.4)' }}>
         <div style={{ position: 'absolute', bottom: 5, left: 0, width: 35, height: 6, background: 'rgba(0,0,0,0.3)', borderRadius: '50%', filter: 'blur(2px)' }} />
         <svg width="40" height="20" viewBox="0 0 40 20">
           {/* Wax stick */}
@@ -107,14 +107,14 @@ const DeskObjects = memo(function DeskObjects() {
         </svg>
       </div>
 
-      {/* 6. Desk Lamp (Top Center/Right) */}
-      <div className="billboard" style={{ position: 'absolute', top: '5%', right: '25%', transformOrigin: 'bottom center', zIndex: 10 }}>
+      {/* 6. Desk Lamp (Top Right) */}
+      <div style={{ position: 'absolute', top: '2%', right: '12%', transformOrigin: 'bottom center', zIndex: 10, transform: 'scale(1.4)' }}>
         {/* Shadow */}
-        <div style={{ position: 'absolute', bottom: -15, left: -20, width: 80, height: 25, background: 'rgba(0,0,0,0.6)', borderRadius: '50%', filter: 'blur(8px)', transform: 'rotateX(60deg)' }} />
+        <div style={{ position: 'absolute', bottom: -5, left: 10, width: 60, height: 15, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', filter: 'blur(5px)' }} />
         <svg width="80" height="100" viewBox="0 0 80 100">
           {/* Base */}
-          <ellipse cx="40" cy="90" rx="30" ry="10" fill="#c4a050" />
-          <ellipse cx="40" cy="88" rx="28" ry="8" fill="#e8cc78" />
+          <ellipse cx="40" cy="90" rx="30" ry="8" fill="#c4a050" />
+          <ellipse cx="40" cy="88" rx="28" ry="6" fill="#e8cc78" />
           {/* Arm bottom */}
           <line x1="40" y1="88" x2="30" y2="50" stroke="#c4a050" strokeWidth="6" strokeLinecap="round" />
           <line x1="40" y1="88" x2="30" y2="50" stroke="#8a7030" strokeWidth="2" strokeLinecap="round" />
@@ -125,11 +125,32 @@ const DeskObjects = memo(function DeskObjects() {
           <circle cx="30" cy="50" r="5" fill="#8a7030" />
           <circle cx="50" cy="20" r="4" fill="#8a7030" />
           {/* Shade */}
-          <path d="M 50 20 L 20 40 Q 15 45 25 55 L 70 30 Q 75 25 65 15 Z" fill="#b08848" />
+          <path d="M 50 20 L 20 40 Q 15 45 25 55 L 70 30 Q 75 25 65 15 Z" fill="#2c4c3b" />
           {/* Bulb/Light */}
           {(env.isNight || env.lighting.lampOn) && (
              <circle cx="45" cy="35" r="8" fill="#fff" filter="blur(2px)" />
           )}
+        </svg>
+      </div>
+
+      {/* 7. Leather Journal (Bottom Right Center) */}
+      <div style={{ position: 'absolute', bottom: '10%', right: '28%', transform: 'rotate(12deg) scale(1.5)', zIndex: 1 }}>
+        <div style={{ position: 'absolute', bottom: -3, left: 2, width: 55, height: 75, background: 'rgba(0,0,0,0.3)', filter: 'blur(3px)', borderRadius: '4px' }} />
+        <svg width="60" height="80" viewBox="0 0 60 80">
+          {/* Pages */}
+          <rect x="5" y="3" width="52" height="74" fill="#f5f0e8" rx="2" />
+          {/* Cover */}
+          <rect x="0" y="0" width="55" height="80" fill="#4a2a1a" rx="3" />
+          {/* Leather texture */}
+          <rect x="0" y="0" width="55" height="80" fill="url(#n)" opacity="0.1" rx="3" />
+          {/* Spine crease */}
+          <line x1="8" y1="0" x2="8" y2="80" stroke="#2a1205" strokeWidth="1.5" />
+          <line x1="10" y1="0" x2="10" y2="80" stroke="#3a1a0a" strokeWidth="1" />
+          {/* Bookmark */}
+          <rect x="35" y="78" width="8" height="15" fill="#7a2840" />
+          <polygon points="35,93 39,88 43,93 43,78 35,78" fill="#7a2840" />
+          {/* Embossed logo/detail */}
+          <ellipse cx="32" cy="40" rx="10" ry="15" fill="transparent" stroke="#3a1a0a" strokeWidth="1.5" opacity="0.6" />
         </svg>
       </div>
 

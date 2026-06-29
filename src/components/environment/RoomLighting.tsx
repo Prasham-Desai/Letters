@@ -6,67 +6,70 @@ const RoomLighting = memo(function RoomLighting() {
   const env = useEnvironment();
   const l = env.lighting;
 
-  // Window is roughly at top: 3%, left: 4%, width: ~35% of screen
-  // Sunlight beam angle should cast from that area across the desk
-  const sunlightAngle = `${l.shadowAngle}deg`;
-
   return (
     <>
-      {/* 1. Ambient Tint */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundColor: l.ambientColor,
-          transition: 'background-color 3s ease',
-          mixBlendMode: 'multiply',
-          zIndex: 1,
-        }}
-        aria-hidden="true"
-      />
-
-      {/* 2. Sunlight Beam */}
-      {env.isDaytime && (
+      {/* 1. Sunlight Beam (Volumetric Ray) */}
+      {env.isDaytime && env.weather !== 'rain' && env.weather !== 'snow' && (
         <div
           style={{
-            position: 'absolute',
+            position: 'fixed',
             inset: 0,
-            background: `linear-gradient(${sunlightAngle}, ${l.sunlightColor} 0%, transparent 60%)`,
-            transition: 'background 3s ease, opacity 3s ease',
+            background: `linear-gradient(${l.shadowAngle}deg, rgba(255, 230, 180, ${l.intensity * 0.4}) 0%, transparent 60%)`,
+            transition: 'background 5s ease, opacity 5s ease',
             opacity: l.intensity,
-            mixBlendMode: 'screen',
-            zIndex: 2,
+            mixBlendMode: 'overlay',
+            pointerEvents: 'none',
+            zIndex: 10,
           }}
           aria-hidden="true"
         />
       )}
 
-      {/* 3. Desk Lamp Glow */}
+      {/* 2. Desk Lamp Glow */}
       <div
         style={{
-          position: 'absolute',
+          position: 'fixed',
           inset: 0,
-          // Position the radial gradient at the bottom right where a lamp might be
-          background: `radial-gradient(circle at 80% 80%, rgba(255, 200, 100, ${l.lampIntensity * 0.15}) 0%, rgba(255, 180, 50, ${l.lampIntensity * 0.05}) 30%, transparent 70%)`,
+          // Position matches the desk lamp SVG in DeskObjects
+          background: `radial-gradient(circle at 88% 25%, rgba(255, 180, 50, ${l.lampIntensity * 0.6}) 0%, rgba(255, 120, 20, ${l.lampIntensity * 0.15}) 20%, transparent 60%)`,
           transition: 'background 3s ease, opacity 3s ease',
           opacity: l.lampOn ? 1 : 0,
           mixBlendMode: 'screen',
-          zIndex: 3,
+          pointerEvents: 'none',
+          zIndex: 11,
         }}
         aria-hidden="true"
       />
 
-      {/* 4. Vignette / Dark Edges */}
+      {/* 3. Ambient Vignette / Edge Shadow (Depth) */}
       <div
         style={{
-          position: 'absolute',
+          position: 'fixed',
           inset: 0,
           background: env.isNight
-            ? 'radial-gradient(circle at center, transparent 40%, rgba(10, 15, 30, 0.4) 100%)'
-            : 'radial-gradient(circle at center, transparent 60%, rgba(40, 20, 10, 0.15) 100%)',
+            ? 'radial-gradient(ellipse at 50% 60%, transparent 40%, rgba(10, 15, 30, 0.7) 100%)'
+            : env.weather === 'rain'
+            ? 'radial-gradient(ellipse at 50% 60%, transparent 50%, rgba(30, 40, 50, 0.4) 100%)'
+            : 'radial-gradient(ellipse at 50% 60%, transparent 60%, rgba(40, 20, 10, 0.25) 100%)',
           transition: 'background 5s ease',
           pointerEvents: 'none',
-          zIndex: 4,
+          mixBlendMode: 'multiply',
+          zIndex: 12,
+        }}
+        aria-hidden="true"
+      />
+
+      {/* 4. Global Color Grading */}
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: l.ambientColor,
+          transition: 'background-color 5s ease',
+          mixBlendMode: 'multiply',
+          pointerEvents: 'none',
+          zIndex: 13,
+          opacity: 0.8,
         }}
         aria-hidden="true"
       />

@@ -96,7 +96,7 @@ const WindowScene = memo(function WindowScene() {
       </div>
 
       {/* ─── 5. Landscape Silhouettes (Trees/Hills) ─── */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%' }}>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 'min(30%, 200px)' }}>
         <svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
           {/* Back hills */}
           <path d="M 0 60 Q 25 30 50 60 T 100 50 L 100 100 L 0 100 Z" fill={env.isNight ? '#121820' : '#4a6b5d'} style={{ transition: 'fill 3s ease' }} />
