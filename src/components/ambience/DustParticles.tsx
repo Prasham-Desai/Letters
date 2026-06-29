@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
 
 interface Particle {
   x: number; y: number;
@@ -14,6 +15,7 @@ interface Particle {
 export default function DustParticles() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reducedMotion = useReducedMotion();
+  const env = useEnvironment();
 
   useEffect(() => {
     if (reducedMotion) return;
@@ -50,6 +52,9 @@ export default function DustParticles() {
       lastTime = time;
       ctx.clearRect(0, 0, W, H);
       
+      const isNight = env.isNight;
+      const lightFactor = env.lighting.intensity;
+      
       for (const p of particles) {
         p.life++;
         p.x += p.vx;
@@ -63,9 +68,12 @@ export default function DustParticles() {
         
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 230, 180, ${p.opacity * fade})`;
+        
+        // Tint dust based on environment light
+        const dustAlpha = p.opacity * fade * (isNight ? 0.3 : Math.max(0.4, lightFactor));
+        ctx.fillStyle = `rgba(255, 230, 180, ${dustAlpha})`;
         ctx.shadowBlur = p.size * 2;
-        ctx.shadowColor = `rgba(255, 200, 120, ${p.opacity * fade * 0.8})`;
+        ctx.shadowColor = `rgba(255, 200, 120, ${dustAlpha * 0.8})`;
         ctx.fill();
         
         // Reset shadow for next draw to avoid compounding

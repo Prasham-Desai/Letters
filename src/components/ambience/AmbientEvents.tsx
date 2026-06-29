@@ -2,32 +2,45 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
 
-type Event = 'leaf' | 'butterfly' | 'airplane';
+type Event = 'leaf' | 'butterfly' | 'airplane' | 'lightning' | 'firefly';
 
 export default function AmbientEvents() {
   const [active, setActive] = useState<Event | null>(null);
   const reduced = useReducedMotion();
+  const env = useEnvironment();
 
   useEffect(() => {
     if (reduced) return;
     const schedule = () => {
       const delay = 30000 + Math.random() * 90000; // 30–120 seconds
       return setTimeout(() => {
-        const events: Event[] = ['leaf', 'butterfly', 'airplane'];
+        const events: Event[] = [];
+        // Weather/Time aware event selection
+        if (env.weather === 'sunny' && env.isDaytime) events.push('butterfly', 'airplane');
+        if (env.weather === 'rain') events.push('lightning', 'leaf');
+        if (env.weather === 'cloudy' || env.weather === 'snow') events.push('leaf');
+        if (env.isNight && env.weather === 'sunny') events.push('firefly');
+        
+        // Fallback if none match
+        if (events.length === 0) events.push('leaf');
+
         setActive(events[Math.floor(Math.random() * events.length)]);
         setTimeout(() => { setActive(null); schedule(); }, 5000);
       }, delay);
     };
     const t = schedule();
     return () => clearTimeout(t);
-  }, [reduced]);
+  }, [reduced, env.weather, env.isDaytime, env.isNight]);
 
   return (
     <AnimatePresence>
       {active === 'leaf' && <LeafEvent key="leaf" />}
       {active === 'butterfly' && <ButterflyEvent key="butterfly" />}
       {active === 'airplane' && <AirplaneEvent key="airplane" />}
+      {active === 'lightning' && <LightningEvent key="lightning" />}
+      {active === 'firefly' && <FireflyEvent key="firefly" />}
     </AnimatePresence>
   );
 }
@@ -85,6 +98,37 @@ function AirplaneEvent() {
         <path d="M30 10 L4 2 L8 10 L4 18 Z" fill="#b8b0a4" opacity="0.55"/>
         <path d="M8 10 L14 5 L20 10 L14 12 Z" fill="#a0917b" opacity="0.4"/>
       </svg>
+    </motion.div>
+  );
+}
+
+function LightningEvent() {
+  return (
+    <motion.div
+      className="absolute inset-0 pointer-events-none"
+      style={{ zIndex: 4 }}
+      initial={{ backgroundColor: 'rgba(255,255,255,0)' }}
+      animate={{ backgroundColor: ['rgba(255,255,255,0)', 'rgba(255,255,255,0.4)', 'rgba(255,255,255,0)', 'rgba(255,255,255,0.2)', 'rgba(255,255,255,0)'] }}
+      transition={{ duration: 0.8, ease: 'linear' }}
+    />
+  );
+}
+
+function FireflyEvent() {
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      style={{ top: `${40 + Math.random() * 20}%`, left: `${20 + Math.random() * 60}%`, zIndex: 5 }}
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ 
+        opacity: [0, 1, 0, 1, 0],
+        scale: [0, 1.5, 0.5, 1.5, 0],
+        x: [0, 15, -15, 10, 0],
+        y: [0, -10, -20, 5, -30]
+      }}
+      transition={{ duration: 6, ease: 'easeInOut' }}
+    >
+      <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#c8ffb0', boxShadow: '0 0 8px 3px rgba(200,255,150,0.6)' }} />
     </motion.div>
   );
 }

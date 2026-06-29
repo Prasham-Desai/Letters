@@ -103,7 +103,14 @@ const doodleSet = [
   )},
 ];
 
+import { useEnvironment } from '@/contexts/EnvironmentContext';
+
 export default function Doodles() {
+  const env = useEnvironment();
+  
+  // Doodles are less visible at night, slightly more visible in warm light
+  const doodleOpacity = env.isNight ? 0.3 : env.lighting.intensity * 0.7 + 0.3;
+
   return (
     <>
       {doodleSet.map(d => (
@@ -115,6 +122,8 @@ export default function Doodles() {
             top: d.y,
             transform: `rotate(${d.rot}deg) scale(${d.scale})`,
             zIndex: 2,
+            opacity: doodleOpacity,
+            transition: 'opacity 3s ease',
           }}
           aria-hidden="true"
         >

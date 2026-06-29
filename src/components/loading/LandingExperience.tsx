@@ -40,7 +40,7 @@ export default function LandingExperience({ onComplete }: Props) {
           className="fixed inset-0 z-[1000] flex items-center justify-center"
           style={{ backgroundColor: 'var(--cream)' }}
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.8, ease: 'easeInOut' } }}
+          exit={{ opacity: 0, transition: { duration: 1.8, ease: 'easeInOut' } }}
         >
           {/* Paper texture overlay */}
           <motion.div

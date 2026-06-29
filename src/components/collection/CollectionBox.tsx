@@ -61,13 +61,13 @@ const CollectionBox = memo(function CollectionBox({ count, letters, onOpen, mail
             </linearGradient>
           </defs>
 
-          {/* Ground contact shadow */}
-          <ellipse cx="42" cy="84" rx="28" ry="4" fill="rgba(40,20,8,0.22)"/>
+          {/* Desk contact shadow */}
+          <ellipse cx="42" cy="80" rx="32" ry="4" fill="rgba(40,20,8,0.25)"/>
 
           {/* Box body — layered wood construction */}
-          <rect x="6" y="34" width="72" height="46" rx="3" fill="url(#chest-wood)"/>
+          <rect x="6" y="34" width="72" height="42" rx="3" fill="url(#chest-wood)"/>
           {/* Interior visible above body */}
-          <rect x="8" y="34" width="68" height="10" rx="2" fill="url(#chest-interior)" opacity="0.9"/>
+          <rect x="8" y="34" width="68" height="8" rx="2" fill="url(#chest-interior)" opacity="0.9"/>
 
           {/* Wood grain on body */}
           {[44, 52, 60, 68, 74].map(y => (

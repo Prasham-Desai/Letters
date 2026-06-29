@@ -78,7 +78,7 @@ export function useWeather(): WeatherData {
     isLoaded: false,
   });
   const locationRef = useRef<GeoLocation | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadWeather = useCallback(async () => {
     // Get location once, then reuse
