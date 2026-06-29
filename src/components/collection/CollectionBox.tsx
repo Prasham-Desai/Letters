@@ -9,13 +9,20 @@ interface Props {
   count: number;
   letters: LetterMeta[];
   onOpen: (letter: LetterMeta) => void;
+  mailboxCount: number;
+  onReturnAll: () => void;
 }
 
-const CollectionBox = memo(function CollectionBox({ count, letters, onOpen }: Props) {
+const CollectionBox = memo(function CollectionBox({ count, letters, onOpen, mailboxCount, onReturnAll }: Props) {
   const [panelOpen, setPanelOpen] = useState(false);
   const { collectionBoxRef, isCollectionOpening } = useAnimation();
 
   const isLidOpen = panelOpen || isCollectionOpening;
+
+  const handleReturnAll = () => {
+    setPanelOpen(false);
+    onReturnAll();
+  };
 
   return (
     <div ref={collectionBoxRef} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -183,6 +190,8 @@ const CollectionBox = memo(function CollectionBox({ count, letters, onOpen }: Pr
                 zIndex: 49,
                 overflow: 'hidden',
                 border: '1px solid rgba(180,160,120,0.15)',
+                display: 'flex',
+                flexDirection: 'column',
               }}
               initial={{ scale: 0.85, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -194,17 +203,46 @@ const CollectionBox = memo(function CollectionBox({ count, letters, onOpen }: Pr
                 padding: '16px 20px 12px',
                 borderBottom: '1px solid rgba(139,118,90,0.15)',
                 background: 'linear-gradient(to bottom, rgba(255,240,200,0.06), transparent)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start'
               }}>
-                <p style={{
-                  fontFamily: 'var(--font-heading)', fontSize: '1.3rem',
-                  color: '#2a1e10', opacity: 0.85,
-                }}>Your collection</p>
-                <p style={{
-                  fontFamily: 'var(--font-ui)', fontSize: '10px',
-                  color: '#9a8a78', letterSpacing: '0.1em', marginTop: '2px',
-                }}>
-                  {count} letter{count !== 1 ? 's' : ''} read
-                </p>
+                <div>
+                  <p style={{
+                    fontFamily: 'var(--font-heading)', fontSize: '1.3rem',
+                    color: '#2a1e10', opacity: 0.85,
+                  }}>Your collection</p>
+                  <p style={{
+                    fontFamily: 'var(--font-ui)', fontSize: '10px',
+                    color: '#9a8a78', letterSpacing: '0.1em', marginTop: '2px',
+                  }}>
+                    {count} letter{count !== 1 ? 's' : ''} read
+                  </p>
+                </div>
+                
+                {/* Reset button only visible if mailbox is empty */}
+                {mailboxCount === 0 && (
+                  <button
+                    onClick={handleReturnAll}
+                    style={{
+                      background: 'none', border: '1px solid rgba(139,118,90,0.3)',
+                      borderRadius: '4px', padding: '6px 10px',
+                      fontFamily: 'var(--font-ui)', fontSize: '10px',
+                      color: '#8a7a68', cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(139,118,90,0.1)';
+                      e.currentTarget.style.color = '#5a4a38';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'none';
+                      e.currentTarget.style.color = '#8a7a68';
+                    }}
+                  >
+                    Return to Mailbox
+                  </button>
+                )}
               </div>
 
               {/* Letters list */}

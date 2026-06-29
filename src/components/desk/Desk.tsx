@@ -18,6 +18,7 @@ interface Props {
   onEnvelopeClick: (letter: LetterMeta) => void;
   onMailboxDrop: () => void;
   onCollectionOpen: (letter: LetterMeta) => void;
+  onReturnAll: () => void;
   openedLetterIds: string[];
 }
 
@@ -28,11 +29,12 @@ const Desk = memo(function Desk({
   onEnvelopeClick,
   onMailboxDrop,
   onCollectionOpen,
+  onReturnAll,
   openedLetterIds,
 }: Props) {
   const surfaceRef = useRef<HTMLDivElement>(null);
   const [placed, setPlaced] = useState<PlacedEnvelope[]>([]);
-  const { hiddenEnvelopeIds, flyEnvelope, mailboxRef } = useAnimation();
+  const { hiddenEnvelopeIds, flyEnvelope, flyMultiple, mailboxRef, collectionBoxRef } = useAnimation();
   const prevDeskLettersRef = useRef<LetterMeta[]>(deskLetters);
 
   const recalculate = useCallback(() => {
@@ -76,6 +78,33 @@ const Desk = memo(function Desk({
 
   // Empty desk hint
   const isEmpty = deskLetters.length === 0;
+
+  const handleReturnAllTrigger = useCallback(() => {
+    if (!collectionBoxRef.current || !mailboxRef.current) {
+      onReturnAll();
+      return;
+    }
+
+    const startRect = collectionBoxRef.current.getBoundingClientRect();
+    const endRect = mailboxRef.current.getBoundingClientRect();
+
+    const flights = collectionLetters.map(letter => ({
+      envelope: { 
+        ...letter, 
+        x: 0, y: 0, deskW: 0, deskH: 0, 
+        width: 160, height: 110, 
+        rotation: (Math.random() - 0.5) * 20 
+      },
+      startRect,
+      endRect,
+      type: 'COLLECTION_TO_MAILBOX' as const,
+      onComplete: () => {}, // individual completion callback
+    }));
+
+    flyMultiple(flights, 80, () => {
+      onReturnAll();
+    });
+  }, [collectionLetters, collectionBoxRef, mailboxRef, flyMultiple, onReturnAll]);
 
   return (
     <div
@@ -154,6 +183,8 @@ const Desk = memo(function Desk({
           count={collectionLetters.length}
           letters={collectionLetters}
           onOpen={onCollectionOpen}
+          mailboxCount={mailboxCount}
+          onReturnAll={handleReturnAllTrigger}
         />
       </div>
 

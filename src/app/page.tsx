@@ -31,7 +31,7 @@ export default function Home() {
 
   const {
     mailboxIds, deskIds, collectionIds,
-    dropToDesk, moveToCollection,
+    dropToDesk, moveToCollection, resetLetters,
   } = useLetterState(allIds);
 
   useEffect(() => {
@@ -278,6 +278,7 @@ export default function Home() {
               onEnvelopeClick={openLetter}
               onMailboxDrop={handleMailboxDrop}
               onCollectionOpen={openLetter}
+              onReturnAll={resetLetters}
               openedLetterIds={collectionIds}
             />
           </div>

@@ -4,7 +4,7 @@ import { PlacedEnvelope } from '@/types/letter';
 import { motion, AnimatePresence } from 'framer-motion';
 import Envelope from '@/components/envelope/Envelope';
 
-type FlightType = 'MAILBOX_TO_DESK' | 'DESK_TO_COLLECTION';
+type FlightType = 'MAILBOX_TO_DESK' | 'DESK_TO_COLLECTION' | 'COLLECTION_TO_MAILBOX';
 
 interface Flight {
   id: string; // unique flight ID
@@ -18,6 +18,7 @@ interface Flight {
 interface AnimationContextValue {
   isAnimating: boolean;
   flyEnvelope: (envelope: PlacedEnvelope, startRect: DOMRect, endRect: DOMRect, type: FlightType, onComplete: () => void) => void;
+  flyMultiple: (flights: Omit<Flight, 'id'>[], staggerMs: number, onAllComplete: () => void) => void;
   // Refs for dynamic DOM measurement
   mailboxRef: React.RefObject<HTMLDivElement | null>;
   collectionBoxRef: React.RefObject<HTMLDivElement | null>;
@@ -30,7 +31,7 @@ interface AnimationContextValue {
 const AnimationContext = createContext<AnimationContextValue | null>(null);
 
 export function AnimationProvider({ children }: { children: ReactNode }) {
-  const [activeFlight, setActiveFlight] = useState<Flight | null>(null);
+  const [activeFlights, setActiveFlights] = useState<Flight[]>([]);
   const [isMailboxOpening, setIsMailboxOpening] = useState(false);
   const [isCollectionOpening, setIsCollectionOpening] = useState(false);
   const [hiddenEnvelopeIds, setHiddenEnvelopeIds] = useState<Set<string>>(new Set());
@@ -60,7 +61,7 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
     }
 
     setTimeout(() => {
-      setActiveFlight(flight);
+      setActiveFlights([flight]);
     }, 300);
 
   }, []);
@@ -71,35 +72,80 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
     processQueue();
   }, [processQueue]);
 
-  const handleFlightComplete = useCallback(() => {
-    if (!activeFlight) return;
+  const flyMultiple = useCallback((flightsInput: Omit<Flight, 'id'>[], staggerMs: number, onAllComplete: () => void) => {
+    if (flightsInput.length === 0) return;
     
-    if (activeFlight.type === 'MAILBOX_TO_DESK') {
-      setIsMailboxOpening(false);
-    } else if (activeFlight.type === 'DESK_TO_COLLECTION') {
-      setIsCollectionOpening(false);
-    }
+    const flights: Flight[] = flightsInput.map(f => ({ ...f, id: Math.random().toString(36).substr(2, 9) }));
+    
+    // Open all relevant doors for mass flights
+    setIsCollectionOpening(true);
+    setIsMailboxOpening(true);
 
-    activeFlight.onComplete();
-    
-    setHiddenEnvelopeIds(prev => {
-      const next = new Set(prev);
-      next.delete(activeFlight.envelope.id);
-      return next;
-    });
-    
-    setActiveFlight(null);
+    let completedCount = 0;
 
     setTimeout(() => {
-      isProcessing.current = false;
-      processQueue();
-    }, 150);
-  }, [activeFlight, processQueue]);
+      flights.forEach((flight, i) => {
+        setTimeout(() => {
+          const originalOnComplete = flight.onComplete;
+          flight.onComplete = () => {
+            originalOnComplete();
+            completedCount++;
+            if (completedCount === flights.length) {
+              setIsCollectionOpening(false);
+              setIsMailboxOpening(false);
+              onAllComplete();
+            }
+          };
+          
+          setHiddenEnvelopeIds(prev => {
+            const next = new Set(prev);
+            next.add(flight.envelope.id);
+            return next;
+          });
+
+          setActiveFlights(prev => [...prev, flight]);
+        }, i * staggerMs);
+      });
+    }, 300);
+  }, []);
+
+  const handleFlightComplete = useCallback((completedFlightId: string) => {
+    setActiveFlights(prev => {
+      const flight = prev.find(f => f.id === completedFlightId);
+      if (!flight) return prev;
+
+      const next = prev.filter(f => f.id !== completedFlightId);
+      
+      // Handle closing boxes only if this is a standard queued flight
+      if (next.length === 0 && isProcessing.current) {
+        if (flight.type === 'MAILBOX_TO_DESK') setIsMailboxOpening(false);
+        else if (flight.type === 'DESK_TO_COLLECTION') setIsCollectionOpening(false);
+      }
+
+      flight.onComplete();
+      
+      setHiddenEnvelopeIds(hprev => {
+        const hnext = new Set(hprev);
+        hnext.delete(flight.envelope.id);
+        return hnext;
+      });
+      
+      if (next.length === 0 && isProcessing.current) {
+        setTimeout(() => {
+          isProcessing.current = false;
+          processQueue();
+        }, 150);
+      }
+      
+      return next;
+    });
+  }, [processQueue]);
 
   return (
     <AnimationContext.Provider value={{
-      isAnimating: activeFlight !== null || isProcessing.current,
+      isAnimating: activeFlights.length > 0 || isProcessing.current,
       flyEnvelope,
+      flyMultiple,
       mailboxRef,
       collectionBoxRef,
       isMailboxOpening,
@@ -109,13 +155,13 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
       {children}
       {/* FLIGHT LAYER */}
       <AnimatePresence>
-        {activeFlight && (
+        {activeFlights.map(flight => (
           <FlightEnvelope 
-            key={activeFlight.id}
-            flight={activeFlight}
-            onComplete={handleFlightComplete}
+            key={flight.id}
+            flight={flight}
+            onComplete={() => handleFlightComplete(flight.id)}
           />
-        )}
+        ))}
       </AnimatePresence>
     </AnimationContext.Provider>
   );
@@ -132,6 +178,7 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
   const { startRect, endRect, type, envelope } = flight;
   
   const isMailbox = type === 'MAILBOX_TO_DESK';
+  const isReturn = type === 'COLLECTION_TO_MAILBOX';
 
   // Always use the physical dimensions of the envelope for the wrapper
   const envWidth = envelope.width;
@@ -156,10 +203,14 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
   // 5-point trajectory for natural curved path
   const yKeyframes = isMailbox
     ? [0, -arcHeight * 0.4, -arcHeight, deltaY * 0.3 - arcHeight * 0.2, deltaY]
+    : isReturn
+    ? [0, -arcHeight * 0.6, -arcHeight * 1.1, deltaY * 0.4 - arcHeight * 0.4, deltaY]
     : [0, -arcHeight * 0.3, -arcHeight * 0.6, deltaY * 0.4 - arcHeight * 0.15, deltaY];
   
   const xKeyframes = isMailbox
     ? [0, deltaX * 0.1, deltaX * 0.4, deltaX * 0.75, deltaX]
+    : isReturn
+    ? [0, deltaX * 0.2, deltaX * 0.5, deltaX * 0.85, deltaX]
     : [0, deltaX * 0.15, deltaX * 0.45, deltaX * 0.8, deltaX];
 
   // Momentum-based rotation — banking in the direction of travel
@@ -169,18 +220,22 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
   // Smooth rotation during flight
   const rotKeyframes = isMailbox
     ? [baseRotation - 30, baseRotation - 10, baseRotation + 5, baseRotation + 2, baseRotation]
+    : isReturn
+    ? [baseRotation, baseRotation - 15, baseRotation - 30, baseRotation + travelAngle * 0.1, baseRotation - 45]
     : [baseRotation, baseRotation - 5, baseRotation - 15, baseRotation + travelAngle * 0.1, baseRotation + 30];
 
-  // Depth scaling — smooth transition per user requirements
-  // Mailbox to Desk: 0.75 -> 1.0
-  // Desk to Collection: 1.0 -> 0.75
+  // Depth scaling
   const scaleKeyframes = isMailbox
     ? [0.75, 0.8, 0.88, 0.95, 1.0]
+    : isReturn
+    ? [0.75, 0.8, 0.85, 0.6, 0.5]
     : [1.0, 0.95, 0.88, 0.8, 0.75];
 
   // Opacity: stays fully visible until the very end of collection drop
   const opacityKeyframes = isMailbox
     ? [1, 1, 1, 1, 1]
+    : isReturn
+    ? [1, 1, 1, 0.9, 0]
     : [1, 1, 1, 1, 0.9];
 
   return (
@@ -212,8 +267,8 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
         opacity: opacityKeyframes,
       }}
       transition={{
-        duration: 0.75, // Slightly longer for smoother, less abrupt flight
-        ease: [0.25, 0.1, 0.25, 1], // Smooth cubic ease — fast start, gentle landing
+        duration: isReturn ? 0.5 : 0.75, // Faster flight for returns
+        ease: [0.25, 0.1, 0.25, 1], // Smooth cubic ease
         times: [0, 0.25, 0.5, 0.75, 1],
       }}
       onAnimationComplete={onComplete}
