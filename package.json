@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prebuild": "node scripts/generate-letters.mjs",
     "build": "next build && opennextjs-cloudflare build --skipNextBuild",
+    "predev": "node scripts/generate-letters.mjs",
     "dev": "next dev",
     "build:worker": "opennextjs-cloudflare build",
     "deploy": "opennextjs-cloudflare deploy",

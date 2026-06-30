@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { LetterMeta } from '@/types/letter';
-import { getLettersAction } from './actions';
+import lettersData from '@/data/letters.json';
 import { useLetterState } from '@/hooks/useLetterState';
 import { useTimeOfDay } from '@/hooks/useTimeOfDay';
 import { useAnimation } from '@/contexts/AnimationContext';
@@ -35,10 +35,10 @@ export default function Home() {
   } = useLetterState(allIds);
 
   useEffect(() => {
-    getLettersAction().then(data => {
-      setLetters(data);
-      setAllIds(data.map(l => l.id));
-    });
+    // Load static data instead of calling a Node.js server action
+    const data = lettersData as LetterMeta[];
+    setLetters(data);
+    setAllIds(data.map(l => l.id));
   }, []);
 
   // Parallax via direct DOM — zero React re-renders
