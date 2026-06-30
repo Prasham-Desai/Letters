@@ -112,7 +112,7 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
     }, 300);
   }, []);
 
-  const handleFlightComplete = useCallback((completedFlightId: string) => {
+  const handleFlightComplete = useCallback((completedFlightId: string, envelopeId: string) => {
     setActiveFlights(prev => {
       const flight = prev.find(f => f.id === completedFlightId);
       if (!flight) return prev;
@@ -124,14 +124,6 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
         if (flight.type === 'MAILBOX_TO_DESK') setIsMailboxOpening(false);
         else if (flight.type === 'DESK_TO_COLLECTION') setIsCollectionOpening(false);
       }
-
-      flight.onComplete();
-      
-      setHiddenEnvelopeIds(hprev => {
-        const hnext = new Set(hprev);
-        hnext.delete(flight.envelope.id);
-        return hnext;
-      });
       
       if (next.length === 0 && isProcessing.current) {
         setTimeout(() => {
@@ -141,6 +133,12 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
       }
       
       return next;
+    });
+
+    setHiddenEnvelopeIds(hprev => {
+      const hnext = new Set(hprev);
+      hnext.delete(envelopeId);
+      return hnext;
     });
   }, [processQueue]);
 
@@ -162,7 +160,7 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
           <FlightEnvelope 
             key={flight.id}
             flight={flight}
-            onComplete={() => handleFlightComplete(flight.id)}
+            onComplete={(envId) => handleFlightComplete(flight.id, envId)}
           />
         ))}
       </AnimatePresence>
@@ -177,7 +175,7 @@ export function useAnimation() {
 }
 
 // Internal Component to render the flying clone with physical motion
-function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: () => void }) {
+function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: (envelopeId: string) => void }) {
   const { startRect, endRect, type, envelope } = flight;
   
   const isMailbox = type === 'MAILBOX_TO_DESK';
@@ -201,66 +199,47 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
   const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
   
   // Dynamic arc height — proportional to distance, clamped
-  // Lower arc for moving to collection so it feels more like sliding in than jumping
-  const isToCollection = type === 'DESK_TO_COLLECTION';
-  const arcHeight = isToCollection
-    ? Math.min(80, Math.max(40, distance * 0.15))
-    : Math.min(180, Math.max(80, distance * 0.35));
+  // We keep the arc low for all flights so it feels like a gentle slide/toss rather than jumping high
+  const arcHeight = Math.min(60, Math.max(30, distance * 0.15));
 
   const yPeak = Math.min(0, deltaY) - arcHeight;
   
   // Custom trajectories based on flight type
-  const yKeyframes = isMailbox
-    ? [0, -40, -50, yPeak, deltaY] // Extraction, Suspension, Flight, Landing
-    : isToCollection
-    ? [0, yPeak, deltaY] // Smoother 3-point
-    : [0, yPeak, deltaY];
+  // Custom trajectories based on flight type
+  const yKeyframes = [0, yPeak, deltaY];
+  const xKeyframes = [0, deltaX];
 
-  const xKeyframes = isMailbox
-    ? [0, 0, deltaX * 0.05, deltaX * 0.6, deltaX]
-    : [0, deltaX * 0.5, deltaX];
-
-  // Momentum-based rotation — banking in the direction of travel
-  const travelAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
   const baseRotation = envelope.rotation;
   
   const rotKeyframes = isMailbox
-    ? [0, 0, travelAngle * 0.3, baseRotation + (travelAngle * 0.2), baseRotation]
+    ? [0, baseRotation]
     : isReturn
-    ? [baseRotation, baseRotation - 30, baseRotation - 45]
-    : [baseRotation, baseRotation - 10, baseRotation + 15]; // Gentle tilt when going to collection
+    ? [baseRotation, baseRotation - 45]
+    : [baseRotation, baseRotation + 15];
 
-  // Depth scaling — strictly 0.3 in boxes, 1.0 on desk
+  // Depth scaling
   const scaleKeyframes = isMailbox
-    ? [0.3, 0.35, 0.4, 0.85, 1.0]
+    ? [0.3, 1.0]
     : isReturn
     ? [0.3, 0.6, 0.3]
-    : [1.0, 0.8, 0.3]; // Fade size more gracefully
+    : [1.0, 0.3]; 
 
-  // Opacity: stays fully visible until the very end of collection drop
+  // Opacity
   const opacityKeyframes = isMailbox
-    ? [1, 1, 1, 1, 1]
+    ? [1, 1]
     : isReturn
-    ? [1, 0.9, 0]
-    : [1, 1, 0.5]; // Fade out as it enters box
+    ? [1, 0]
+    : [1, 0.5]; 
 
-  const times = isMailbox 
-    ? [0, 0.15, 0.25, 0.8, 1.0] 
-    : isToCollection
-    ? [0, 0.4, 1.0]
-    : [0, 0.5, 1.0];
-    
-  const ease = isMailbox
-    ? ["easeOut", "easeInOut", "easeOut", "easeIn"] // 4 segments
-    : isToCollection
-    ? ["easeOut", "easeInOut"] // Smoother float into the box
-    : ["easeOut", "easeIn"]; // 2 segments
-    
-  const duration = isMailbox 
-    ? 0.95 
-    : isReturn 
-    ? 0.5 
-    : 0.85; // Slightly longer for smoother slide
+  const duration = isReturn ? 0.5 : 0.85; 
+
+  const getTransition = (arr: number[]) => {
+    if (arr.length === 3) {
+      return { duration, ease: ["easeOut", "easeIn"], times: [0, 0.5, 1.0] };
+    }
+    // Use linear for 2-point properties (like X axis) so they don't decelerate while Y is accelerating
+    return { duration, ease: "linear" };
+  };
 
   return (
     <motion.div
@@ -291,11 +270,16 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: ()
         opacity: opacityKeyframes,
       }}
       transition={{
-        duration,
-        ease: ease as any,
-        times,
+        x: getTransition(xKeyframes),
+        y: getTransition(yKeyframes),
+        scale: getTransition(scaleKeyframes),
+        rotate: getTransition(rotKeyframes),
+        opacity: getTransition(opacityKeyframes),
       }}
-      onAnimationComplete={onComplete}
+      onAnimationComplete={() => {
+        flight.onComplete();
+        onComplete(flight.envelope.id);
+      }}
     >
       <Envelope 
         data={{...envelope, x: 0, y: 0}} 

@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { LetterMeta } from '@/types/letter';
-import { getLetterIndex } from '@/lib/letters';
+import { getLettersAction } from './actions';
 import { useLetterState } from '@/hooks/useLetterState';
 import { useTimeOfDay } from '@/hooks/useTimeOfDay';
 import { useAnimation } from '@/contexts/AnimationContext';
@@ -35,7 +35,7 @@ export default function Home() {
   } = useLetterState(allIds);
 
   useEffect(() => {
-    getLetterIndex().then(data => {
+    getLettersAction().then(data => {
       setLetters(data);
       setAllIds(data.map(l => l.id));
     });
@@ -143,133 +143,56 @@ export default function Home() {
           transition: 'opacity 0.8s ease',
         }}
       >
-        {/* Deep floor shadow — makes the desk feel grounded */}
+        {/* Doodle Desk shadow */}
         <div style={{
-          position: 'absolute', bottom: -40, left: '4%', right: '4%',
-          height: 45,
-          background: 'radial-gradient(ellipse 90% 100% at 50% 0%, rgba(40,24,8,0.35) 0%, transparent 75%)',
-          filter: 'blur(12px)',
-          zIndex: -1,
+          position: 'absolute', bottom: -44, left: '6%', right: '4%',
+          height: 20,
+          backgroundColor: 'rgba(0,0,0,0.08)',
+          borderRadius: '50%',
+          zIndex: -2,
         }} aria-hidden="true" />
 
-        {/* Desk legs — turned wood legs with subtle taper */}
-        {[7, 93].map(pct => (
+        {/* Doodle Desk legs */}
+        {[8, 92].map(pct => (
           <div key={pct} style={{
             position: 'absolute',
-            bottom: -58, left: `${pct}%`,
+            bottom: -50, left: `${pct}%`,
             transform: 'translateX(-50%)',
-            width: 16, height: 60,
-            background: 'linear-gradient(175deg, #8a6428 0%, #6a4a1c 40%, #5a3a14 100%)',
-            borderRadius: '2px 2px 6px 6px',
+            width: 14, height: 50,
+            backgroundColor: '#38281c',
+            border: '3px solid #140d0a',
+            borderRadius: '2px 2px 8px 12px',
             zIndex: -1,
-            boxShadow: '3px 2px 8px rgba(0,0,0,0.18), inset -2px 0 4px rgba(0,0,0,0.08)',
-          }} aria-hidden="true">
-            {/* Turned groove detail */}
-            <div style={{
-              position: 'absolute', top: 8, left: 2, right: 2, height: 3,
-              background: 'linear-gradient(to bottom, rgba(255,200,100,0.12), rgba(0,0,0,0.08))',
-              borderRadius: 1,
-            }} />
-            <div style={{
-              position: 'absolute', top: 16, left: 2, right: 2, height: 2,
-              background: 'rgba(0,0,0,0.06)',
-              borderRadius: 1,
-            }} />
-          </div>
+          }} aria-hidden="true" />
         ))}
 
-        {/* Desk front face — carved apron with edge detail */}
+        {/* Doodle Desk front face */}
         <div style={{
-          position: 'absolute', bottom: -36, left: 0, right: 0,
-          height: 40,
-          background: 'linear-gradient(178deg, #9a7438 0%, #7a5820 50%, #6a4818 100%)',
-          borderRadius: '0 0 8px 8px',
-          boxShadow: '0 12px 36px rgba(40,22,6,0.42), inset 0 1px 0 rgba(255,200,120,0.12)',
+          position: 'absolute', bottom: -30, left: -2, right: -2,
+          height: 34,
+          backgroundColor: '#302217',
+          border: '3px solid #140d0a',
+          borderRadius: '0 0 6px 14px',
           zIndex: 9,
         }} aria-hidden="true">
-          {/* Carved edge groove */}
+          {/* Doodle detail line */}
           <div style={{
-            position: 'absolute', top: 4, left: '3%', right: '3%', height: 2,
-            background: 'linear-gradient(to right, transparent 0%, rgba(255,200,120,0.10) 20%, rgba(255,200,120,0.10) 80%, transparent 100%)',
-            borderRadius: 1,
-          }} />
-          {/* Wood grain lines on front face */}
-          {[12, 20, 28].map(y => (
-            <div key={y} style={{
-              position: 'absolute', left: '3%', right: '3%', top: y,
-              height: 1, background: 'rgba(0,0,0,0.06)',
-            }} aria-hidden="true" />
-          ))}
-          {/* Bottom carved bead */}
-          <div style={{
-            position: 'absolute', bottom: 5, left: '3%', right: '3%', height: 2,
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.08), rgba(255,200,120,0.06))',
-            borderRadius: 1,
+            position: 'absolute', bottom: 6, left: 8, right: 12, height: 3,
+            backgroundColor: '#140d0a', opacity: 0.15,
+            borderRadius: '5px',
           }} />
         </div>
 
-        {/* Desk surface */}
+        {/* Doodle Desk surface */}
         <div style={{
           position: 'relative',
           height: 'min(580px, 68vh)',
-          background: [
-            /* Fine walnut grain */
-            'repeating-linear-gradient(88deg, transparent, transparent 2px, rgba(90,60,20,0.05) 2px, rgba(90,60,20,0.05) 3px)',
-            /* Medium grain variation */
-            'repeating-linear-gradient(91deg, transparent, transparent 8px, rgba(60,40,12,0.035) 8px, rgba(60,40,12,0.035) 9px)',
-            /* Broad plank joins */
-            'repeating-linear-gradient(89deg, transparent, transparent 60px, rgba(40,24,8,0.02) 60px, rgba(40,24,8,0.02) 62px)',
-            /* Cross-grain subtle knots */
-            'repeating-linear-gradient(4deg, transparent, transparent 100px, rgba(80,50,18,0.012) 100px, rgba(80,50,18,0.012) 102px)',
-            /* Primary walnut tone */
-            'linear-gradient(162deg, #c89850 0%, #b88838 18%, #a87828 38%, #b08040 58%, #b88c48 75%, #c49858 100%)',
-          ].join(', '),
-          borderRadius: '8px 8px 0 0',
-          boxShadow: [
-            '0 -3px 0 0 rgba(255,215,130,0.12) inset', /* Top rim highlight */
-            'inset 0 0 60px rgba(60,38,16,0.10)',       /* Subtle inner shadow */
-            '0 -1px 0 0 rgba(0,0,0,0.08)',              /* Top edge line */
-          ].join(', '),
+          backgroundColor: '#4a3726',
+          border: '3px solid #140d0a',
+          borderRadius: '8px 12px 0 0',
           overflow: 'hidden',
         }}>
-          {/* Top-left directional light highlight */}
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-            background: 'radial-gradient(ellipse 70% 60% at 20% 15%, rgba(255,220,140,0.14) 0%, transparent 60%)',
-          }} aria-hidden="true" />
 
-          {/* Edge highlight — left */}
-          <div style={{
-            position: 'absolute', top: 0, left: 0, bottom: 0, width: 3,
-            background: 'linear-gradient(to right, rgba(255,210,130,0.10), transparent)',
-            zIndex: 0,
-          }} aria-hidden="true" />
-
-          {/* Vignette */}
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-            background: 'radial-gradient(ellipse 85% 78% at 50% 50%, transparent 40%, rgba(50,30,8,0.20) 100%)',
-          }} aria-hidden="true" />
-
-          {/* Time-of-day warm tint */}
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-            background: timeOfDay === 'night'
-              ? 'rgba(30,40,80,0.14)'
-              : timeOfDay === 'evening'
-              ? 'rgba(180,100,40,0.10)'
-              : timeOfDay === 'morning'
-              ? 'rgba(255,200,100,0.07)'
-              : 'transparent',
-            transition: 'background 3s ease',
-          }} aria-hidden="true" />
-
-          {/* Paper texture noise overlay */}
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'0.02\'/%3E%3C/svg%3E")',
-            backgroundSize: '200px 200px',
-          }} aria-hidden="true" />
 
           {/* Desk content */}
           <div style={{ position: 'relative', zIndex: 2, width: '100%', height: '100%' }}>

@@ -115,9 +115,11 @@ const WaxSeal = memo(function WaxSeal({ type, color, cracked = false, size = 48 
         
         {type === 'flower' && (
           <g transform="scale(1.35)">
-            {[0, 60, 120, 180, 240, 300].map((a, i) => (
-              <ellipse key={i} cx={Math.cos((a * Math.PI) / 180) * 5} cy={Math.sin((a * Math.PI) / 180) * 5} rx="2.5" ry="4" transform={`rotate(${a})`} />
-            ))}
+            {[0, 60, 120, 180, 240, 300].map((a, i) => {
+              const cx = (Math.cos((a * Math.PI) / 180) * 5).toFixed(5);
+              const cy = (Math.sin((a * Math.PI) / 180) * 5).toFixed(5);
+              return <ellipse key={i} cx={cx} cy={cy} rx="2.5" ry="4" transform={`rotate(${a})`} />;
+            })}
             <circle cx="0" cy="0" r="3.5" />
           </g>
         )}

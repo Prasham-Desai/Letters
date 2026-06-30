@@ -110,37 +110,18 @@ const Envelope = memo(function Envelope({ data, isOpened, onClick, dropDelay = 0
 
         {/* Stamp — top right */}
         <div style={{ position: 'absolute', top: 8, right: 8, transform: `rotate(${data.rotation * -0.25}deg)` }}>
-          <Stamp type={data.stamp} size={32} />
-        </div>
-
-        {/* Title */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '14px',
-            left: '14px',
-            right: '48px',
-            fontFamily: 'var(--font-heading)',
-            fontSize: '15px',
-            fontWeight: 500,
-            lineHeight: 1.25,
-            color: '#2e2318',
-            opacity: 0.88,
-            letterSpacing: '0.01em',
-          }}
-        >
-          {data.title}
+          <Stamp type={data.stamp} size={24} />
         </div>
 
         {/* Wax seal — shifted slightly lower from flap intersection */}
         <div style={{
           position: 'absolute',
-          top: `calc(${data.height * 0.44}px + 10px)`,
+          top: `calc(${data.height * 0.44}px + 8px)`,
           left: '50%',
           transform: 'translate(-50%, -50%)',
           zIndex: 3,
         }}>
-          <WaxSeal type={data.sealType} color={data.seal} cracked={isOpened} size={48} />
+          <WaxSeal type={data.sealType} color={data.seal} cracked={isOpened} size={36} />
         </div>
 
         {/* Opened: letter peeking out */}
@@ -167,7 +148,7 @@ const Envelope = memo(function Envelope({ data, isOpened, onClick, dropDelay = 0
         <div
           style={{
             position: 'absolute', inset: 0,
-            background: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 128 128\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'0.03\'/%3E%3C/svg%3E")',
+            background: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 128 128\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'0.08\'/%3E%3C/svg%3E")',
             backgroundSize: '100px 100px',
             pointerEvents: 'none',
             borderRadius: 'inherit',

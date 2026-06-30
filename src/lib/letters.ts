@@ -1,9 +1,5 @@
 import { LetterMeta, Letter } from '@/types/letter';
 
-export async function getLetterIndex(): Promise<LetterMeta[]> {
-  const data = await import('@/content/index.json');
-  return data.default as LetterMeta[];
-}
 
 export async function getLetterContent(file: string): Promise<string> {
   try {

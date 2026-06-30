@@ -38,8 +38,13 @@ export default function CustomCursor() {
       current.current.x += dx * 0.18;
       current.current.y += dy * 0.18;
       if (cursorRef.current) {
+        // Shorter (base scale 0.75) and natural holding angle (base rotation -75deg)
+        const scale = isClicking ? '0.65' : isHovering ? '0.85' : '0.75';
+        const rotate = isClicking ? '-70deg' : isHovering ? '-60deg' : '-75deg';
+        
         cursorRef.current.style.transform =
-          `translate(${current.current.x}px, ${current.current.y}px) translate(-50%,-50%) ${isClicking ? 'scale(0.82)' : isHovering ? 'scale(1.3) rotate(-15deg)' : 'scale(1)'}`;
+          `translate(${current.current.x}px, ${current.current.y}px) scale(${scale}) rotate(${rotate})`;
+        cursorRef.current.style.transformOrigin = 'top left';
       }
       rafRef.current = requestAnimationFrame(animate);
     };
@@ -61,22 +66,31 @@ export default function CustomCursor() {
       className="custom-cursor"
       style={{ position: 'fixed', top: 0, left: 0, zIndex: 99999, pointerEvents: 'none' }}
     >
-      {/* Fountain pen nib SVG */}
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        {/* Pen body */}
-        <path
-          d="M12 2 L16 10 L12 22 L8 10 Z"
-          fill={isHovering ? '#c9924a' : '#3a3530'}
-          opacity={isHovering ? 0.9 : 0.75}
-          style={{ transition: 'fill 0.2s ease, opacity 0.2s ease' }}
-        />
-        {/* Nib split */}
-        <line x1="12" y1="14" x2="12" y2="22" stroke="#f5f0e8" strokeWidth="0.5" opacity="0.6"/>
-        {/* Ink dot */}
+      {/* Realistic Feather Quill */}
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none" style={{ filter: 'drop-shadow(2px 6px 8px rgba(30,20,10,0.25))' }}>
+        {/* Feather Back / Right side */}
+        <path d="M5 5 C 25 -5, 60 20, 50 50 C 35 35, 20 20, 5 5 Z" fill={isHovering ? '#f4eedb' : '#ffffff'} />
+        
+        {/* Feather Front / Left side */}
+        <path d="M5 5 C -5 25, 20 60, 50 50 C 35 35, 20 20, 5 5 Z" fill={isHovering ? '#d8cbb8' : '#e6dfce'} />
+        
+        {/* Detailed texture lines (feather vanes) */}
+        <path d="M10 10 L22 3 M15 15 L30 5 M20 20 L38 9 M25 25 L45 15 M30 30 L48 22 M35 35 L52 28" stroke="rgba(0,0,0,0.03)" strokeWidth="1" />
+        <path d="M10 10 L3 22 M15 15 L5 30 M20 20 L9 38 M25 25 L15 45 M30 30 L22 48 M35 35 L28 52" stroke="rgba(0,0,0,0.06)" strokeWidth="1" />
+        
+        {/* Central Shaft */}
+        <path d="M1 1 Q 25 25 50 50" stroke="#fdfdfd" strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M1 1 Q 25 25 50 50" stroke="#c8b598" strokeWidth="1" strokeLinecap="round" />
+        
+        {/* Metallic Gold Nib */}
+        <path d="M0 0 L 6 1 L 7 7 L 1 6 Z" fill="#d4af37" />
+        <path d="M0 0 L 3 0.5 L 3.5 3.5 L 0.5 3 Z" fill="#fff" opacity="0.6" />
+        <line x1="0" y1="0" x2="5" y2="5" stroke="#8a6828" strokeWidth="0.5" />
+        
+        {/* Ink dot interaction */}
         {isHovering && (
-          <circle cx="12" cy="22" r="2" fill="#c9924a" opacity="0.4">
-            <animate attributeName="r" values="2;3;2" dur="1s" repeatCount="indefinite"/>
-            <animate attributeName="opacity" values="0.4;0.1;0.4" dur="1s" repeatCount="indefinite"/>
+          <circle cx="2" cy="2" r="1.5" fill="#2a1e10" opacity="0.8">
+            <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.5s" repeatCount="indefinite"/>
           </circle>
         )}
       </svg>
