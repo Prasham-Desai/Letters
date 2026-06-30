@@ -235,10 +235,10 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: (e
 
   const getTransition = (arr: number[]) => {
     if (arr.length === 3) {
-      return { duration, ease: ["easeOut", "easeIn"], times: [0, 0.5, 1.0] };
+      return { duration, ease: ["easeOut", "easeIn"] as any, times: [0, 0.5, 1.0] };
     }
     // Use linear for 2-point properties (like X axis) so they don't decelerate while Y is accelerating
-    return { duration, ease: "linear" };
+    return { duration, ease: "linear" as any };
   };
 
   return (
