@@ -44,6 +44,7 @@ function LineReveal({ lines, active, onCalculateDelay }: { lines: string[]; acti
             style={{
               display: 'inline-block',
               marginRight: '0.28em',
+              padding: '0 0.12em', // Prevent cutting off curly punctuation
               fontFamily: 'var(--font-heading)',
               fontSize: 'clamp(1.5rem, 4.2vw, 2rem)',
               lineHeight: 1.3,

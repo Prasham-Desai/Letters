@@ -282,7 +282,7 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: (e
       }}
     >
       <Envelope 
-        data={{...envelope, x: 0, y: 0}} 
+        data={{...envelope, x: 0, y: 0, rotation: 0}} 
         isOpened={false}
         onClick={() => {}}
       />

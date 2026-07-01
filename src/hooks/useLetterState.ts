@@ -5,7 +5,7 @@ export type LetterLocation = 'mailbox' | 'desk' | 'collection';
 
 export function useLetterState(allLetterIds: string[]) {
   const [locations, setLocations] = useLocalStorage<Record<string, LetterLocation>>(
-    'wnym-locations-v2', {}
+    'wnym-locations-v3', {}
   );
 
   const deskIdsUncapped = allLetterIds.filter(id => locations[id] === 'desk');

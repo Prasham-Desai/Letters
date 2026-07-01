@@ -112,6 +112,57 @@ export default function Home() {
         position: 'fixed', inset: 0, overflow: 'hidden',
       }}
     >
+      <style>{`
+        .responsive-title {
+          position: fixed;
+          top: 32px;
+          left: 40px;
+          font-family: var(--font-heading);
+          font-size: 2.8rem;
+          color: #4a3622;
+          text-shadow: 0 2px 10px rgba(255,255,255,0.9), 0 1px 3px rgba(255,255,255,0.8), 0 4px 20px rgba(255,255,255,0.5);
+          letter-spacing: 0.02em;
+          z-index: 5;
+          pointer-events: none;
+          user-select: none;
+          opacity: 0.95;
+        }
+        .desk-wrapper {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: min(960px, 90vw);
+          transform: translate(-50%, -50%);
+          z-index: 10;
+          will-change: transform;
+          transition: opacity 0.8s ease;
+        }
+        .desk-surface {
+          position: relative;
+          height: min(580px, 68vh);
+          background-color: #4a3726;
+          border: 3px solid #140d0a;
+          border-radius: 8px 12px 0 0;
+          overflow: hidden;
+        }
+        @media (max-width: 768px) {
+          .responsive-title {
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.2rem;
+            width: 100%;
+            text-align: center;
+          }
+          .desk-wrapper {
+            width: 95vw;
+            top: 55%;
+          }
+          .desk-surface {
+            height: min(650px, 75vh);
+          }
+        }
+      `}</style>
       <CustomCursor />
 
       {/* Landing — only first visit */}
@@ -131,16 +182,9 @@ export default function Home() {
       {/* ── DESK — parallax via direct DOM, no React state ── */}
       <div
         ref={deskRef}
+        className="desk-wrapper"
         style={{
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
-          width: 'min(960px, 90vw)',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 10,
-          willChange: 'transform',
           opacity: landingSeen ? 1 : 0,
-          transition: 'opacity 0.8s ease',
         }}
       >
         {/* Doodle Desk shadow */}
@@ -184,14 +228,7 @@ export default function Home() {
         </div>
 
         {/* Doodle Desk surface */}
-        <div style={{
-          position: 'relative',
-          height: 'min(580px, 68vh)',
-          backgroundColor: '#4a3726',
-          border: '3px solid #140d0a',
-          borderRadius: '8px 12px 0 0',
-          overflow: 'hidden',
-        }}>
+        <div className="desk-surface">
 
 
           {/* Desk content */}
@@ -214,15 +251,7 @@ export default function Home() {
       </div>
 
       {/* Title */}
-      <div style={{
-        position: 'fixed', top: 32, left: 40,
-        fontFamily: 'var(--font-heading)', fontSize: '2.8rem',
-        color: '#4a3622',
-        textShadow: '0 2px 10px rgba(255,255,255,0.9), 0 1px 3px rgba(255,255,255,0.8), 0 4px 20px rgba(255,255,255,0.5)',
-        letterSpacing: '0.02em',
-        zIndex: 5, pointerEvents: 'none', userSelect: 'none',
-        opacity: 0.95,
-      }} aria-hidden="true">
+      <div className="responsive-title" aria-hidden="true">
         when you need me
       </div>
 
