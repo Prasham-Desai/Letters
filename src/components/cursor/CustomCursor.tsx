@@ -38,12 +38,12 @@ export default function CustomCursor() {
       current.current.x += dx * 0.18;
       current.current.y += dy * 0.18;
       if (cursorRef.current) {
-        // Shorter (base scale 0.75) and natural holding angle (base rotation -75deg)
+        // Shorter (base scale 0.75) and natural holding angle
         const scale = isClicking ? '0.65' : isHovering ? '0.85' : '0.75';
-        const rotate = isClicking ? '-70deg' : isHovering ? '-60deg' : '-75deg';
+        const rotate = isClicking ? '12.5deg' : isHovering ? '7.5deg' : '22.5deg';
         
         cursorRef.current.style.transform =
-          `translate(${current.current.x}px, ${current.current.y}px) scale(${scale}) rotate(${rotate})`;
+          `translate(${current.current.x}px, ${current.current.y}px) scaleY(-1) scale(${scale}) rotate(${rotate})`;
         cursorRef.current.style.transformOrigin = 'top left';
       }
       rafRef.current = requestAnimationFrame(animate);

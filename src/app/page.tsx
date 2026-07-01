@@ -25,9 +25,14 @@ export default function Home() {
   // Use ref for desk parallax — avoids React re-renders on every mousemove
   const deskRef  = useRef<HTMLDivElement>(null);
   const letterOpen = useRef(false);
+  const explicitFreeze = useRef(false);
 
   const timeOfDay = useTimeOfDay();
-  const { flyEnvelope, collectionBoxRef } = useAnimation();
+  const { flyEnvelope, collectionBoxRef, isAnimating } = useAnimation();
+  
+  // Use a ref so the mousemove listener always sees the latest value without rebinding
+  const isAnimatingRef = useRef(isAnimating);
+  isAnimatingRef.current = isAnimating;
 
   const {
     mailboxIds, deskIds, collectionIds,
@@ -44,7 +49,7 @@ export default function Home() {
   // Parallax via direct DOM — zero React re-renders
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
-      if (!deskRef.current || letterOpen.current) return;
+      if (!deskRef.current || letterOpen.current || isAnimatingRef.current || explicitFreeze.current) return;
       const x = (e.clientX / window.innerWidth  - 0.5) * 9;
       const y = (e.clientY / window.innerHeight - 0.5) * 5;
       deskRef.current.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
@@ -60,8 +65,13 @@ export default function Home() {
   const handleMailboxDrop = useCallback(() => {
     const spaceLeft = Math.max(0, DROP_COUNT - deskIds.length);
     const toDrop = mailboxIds.slice(0, spaceLeft);
-    if (toDrop.length > 0) dropToDesk(toDrop);
-  }, [mailboxIds, deskIds.length, dropToDesk]);
+    if (toDrop.length > 0) {
+      explicitFreeze.current = true;
+      dropToDesk(toDrop);
+      // Fallback unfreeze just in case
+      setTimeout(() => { explicitFreeze.current = false; }, 3000);
+    }
+  }, [deskIds.length, mailboxIds, dropToDesk]);
 
   const openLetter = useCallback(async (letter: LetterMeta) => {
     letterOpen.current = true;
@@ -75,6 +85,14 @@ export default function Home() {
     setActiveContent(text);
     setActiveLetter(letter);
   }, []);
+
+  const prevIsAnimating = useRef(isAnimating);
+  useEffect(() => {
+    if (prevIsAnimating.current === true && isAnimating === false) {
+      explicitFreeze.current = false;
+    }
+    prevIsAnimating.current = isAnimating;
+  }, [isAnimating]);
 
   const handleClose = useCallback(() => {
     if (activeLetter) {
@@ -140,7 +158,7 @@ export default function Home() {
         .desk-surface {
           position: relative;
           height: min(580px, 68vh);
-          background-color: #3a2818;
+          background-color: #4f3827;
           border: 3px solid #140d0a;
           border-radius: 8px 12px 0 0;
           overflow: hidden;

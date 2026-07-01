@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState, useCallback, memo, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, memo, useMemo, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LetterMeta } from '@/types/letter';
 import { placeEnvelopes } from '@/utils/placement';
@@ -78,38 +78,40 @@ const Desk = memo(function Desk({
     return newPlaced.map(p => ({ ...p, x: p.x + 80, y: p.y + 16, deskW: deskDimensions.W, deskH: deskDimensions.H }));
   }, [deskLetters, deskDimensions]);
 
-  const prevDeskLettersRef = useRef<LetterMeta[]>(deskLetters);
+  // Track which IDs we've already launched flights for to prevent flashing
+  const seenIdsRef = useRef<Set<string>>(new Set(deskLetters.map(l => l.id)));
+  
+  // Envelopes that haven't been seen yet MUST be hidden in this exact render pass
+  const pendingDropIds = deskLetters
+    .map(l => l.id)
+    .filter(id => !seenIdsRef.current.has(id) && placed.find(p => p.id === id));
 
-  useEffect(() => {
-    // Detect newly dropped letters (from mailbox to desk)
-    const newLetters = deskLetters.filter(l => !prevDeskLettersRef.current.find(p => p.id === l.id));
-    
-    // `placed` is already synchronously updated, so we can check it immediately
-    const allPlaced = newLetters.every(l => placed.find(p => p.id === l.id));
-    
-    if (newLetters.length > 0 && allPlaced) {
-      const flights = newLetters.map(letter => {
-        const p = placed.find(p => p.id === letter.id)!;
-        const deskRect = surfaceRef.current!.getBoundingClientRect();
-        const mailboxRect = mailboxRef.current!.getBoundingClientRect();
-        const endRect = new DOMRect(deskRect.left + p.x, deskRect.top + p.y, p.width, p.height);
-        
-        return {
-          envelope: p,
-          startRect: mailboxRect,
-          endRect,
-          type: 'MAILBOX_TO_DESK' as const,
-          onComplete: () => {}
-        };
+  useLayoutEffect(() => {
+    if (pendingDropIds.length > 0 && mailboxRef.current) {
+      const flights: any[] = [];
+      const mailboxRect = mailboxRef.current.getBoundingClientRect();
+
+      pendingDropIds.forEach(id => {
+        const el = document.getElementById(`envelope-${id}`);
+        const p = placed.find(p => p.id === id);
+        if (el && p) {
+          const endRect = el.getBoundingClientRect();
+          flights.push({
+            envelope: p,
+            startRect: mailboxRect,
+            endRect,
+            type: 'MAILBOX_TO_DESK',
+            onComplete: () => {}
+          });
+        }
       });
 
-      flyMultiple(flights, 150, () => {});
-
-      prevDeskLettersRef.current = deskLetters;
-      // Clear local hidden state since AnimationContext's hiddenEnvelopeIds will have taken over
-      setLocalHidden(new Set());
+      if (flights.length === pendingDropIds.length) {
+        pendingDropIds.forEach(id => seenIdsRef.current.add(id));
+        flyMultiple(flights, 150, () => {});
+      }
     }
-  }, [deskLetters, placed, flyEnvelope, mailboxRef]);
+  }, [pendingDropIds, placed, flyMultiple, mailboxRef]);
 
   // Empty desk hint
   const isEmpty = deskLetters.length === 0;
@@ -159,7 +161,7 @@ const Desk = memo(function Desk({
             data={env}
             isOpened={openedLetterIds.includes(env.id)}
             onClick={() => onEnvelopeClick(env)}
-            isHidden={hiddenEnvelopeIds.has(env.id) || localHidden.has(env.id) || env.id === activeLetterId}
+            isHidden={hiddenEnvelopeIds.has(env.id) || !seenIdsRef.current.has(env.id) || env.id === activeLetterId}
           />
         ))}
       </AnimatePresence>

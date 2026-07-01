@@ -112,49 +112,49 @@ body {
 /* ─── Premium Desk Surface ───────────────────────────── */
 .desk-surface {
   /* Deep walnut grain base */
-  background-color: #b08848;
+  background-color: #4f3827;
   background-image:
     /* Fine grain lines (horizontal — wood grain runs left-right) */
     repeating-linear-gradient(
       88deg,
       transparent,
       transparent 2px,
-      rgba(90,60,20,0.06) 2px,
-      rgba(90,60,20,0.06) 3px
+      rgba(0,0,0,0.06) 2px,
+      rgba(0,0,0,0.06) 3px
     ),
     /* Medium grain variation */
     repeating-linear-gradient(
       91deg,
       transparent,
       transparent 8px,
-      rgba(60,40,12,0.04) 8px,
-      rgba(60,40,12,0.04) 9px
+      rgba(0,0,0,0.04) 8px,
+      rgba(0,0,0,0.04) 9px
     ),
     /* Broad plank-like striations */
     repeating-linear-gradient(
       89deg,
       transparent,
       transparent 60px,
-      rgba(40,24,8,0.025) 60px,
-      rgba(40,24,8,0.025) 62px
+      rgba(0,0,0,0.025) 60px,
+      rgba(0,0,0,0.025) 62px
     ),
     /* Cross-grain knot-like undulation */
     repeating-linear-gradient(
       4deg,
       transparent,
       transparent 100px,
-      rgba(80,50,18,0.015) 100px,
-      rgba(80,50,18,0.015) 102px
+      rgba(0,0,0,0.015) 100px,
+      rgba(0,0,0,0.015) 102px
     ),
-    /* Primary wood tone gradient — warm walnut */
+    /* Primary wood tone gradient — dark espresso */
     linear-gradient(
       162deg,
-      #c89850 0%,
-      #b88838 18%,
-      #a87828 38%,
-      #b08040 58%,
-      #b88c48 75%,
-      #c49858 100%
+      #5c412d 0%,
+      #543b29 18%,
+      #473223 38%,
+      #4f3827 58%,
+      #573e2b 75%,
+      #5c412d 100%
     );
 }
 

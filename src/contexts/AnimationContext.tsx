@@ -26,6 +26,7 @@ interface AnimationContextValue {
   isMailboxOpening: boolean;
   isCollectionOpening: boolean;
   hiddenEnvelopeIds: Set<string>;
+  triggerMailboxOpen: (ms: number) => void;
 }
 
 const AnimationContext = createContext<AnimationContextValue | null>(null);
@@ -41,6 +42,13 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
 
   const flightQueue = useRef<Flight[]>([]);
   const isProcessing = useRef(false);
+
+  const triggerMailboxOpen = useCallback((ms: number) => {
+    setIsMailboxOpening(true);
+    setTimeout(() => {
+      setIsMailboxOpening(false);
+    }, ms);
+  }, []);
 
   const processQueue = useCallback(() => {
     if (isProcessing.current || flightQueue.current.length === 0) return;
@@ -151,7 +159,8 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
       collectionBoxRef,
       isMailboxOpening,
       isCollectionOpening,
-      hiddenEnvelopeIds
+      hiddenEnvelopeIds,
+      triggerMailboxOpen
     }}>
       {children}
       {/* FLIGHT LAYER */}
@@ -231,7 +240,7 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: (e
     ? [1, 0]
     : [1, 0.5]; 
 
-  const duration = isReturn ? 0.5 : 0.85; 
+  const duration = isMailbox ? 0.85 : isReturn ? 0.5 : 0.85; 
 
   const getTransition = (arr: number[]) => {
     if (arr.length === 3) {
@@ -244,7 +253,7 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: (e
   return (
     <motion.div
       style={{
-        position: 'fixed',
+        position: 'fixed', // Keep fixed for now unless portal is provided
         left: startCenterX,
         top: startCenterY,
         width: envWidth,
@@ -282,9 +291,10 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: (e
       }}
     >
       <Envelope 
-        data={{...envelope, x: 0, y: 0, rotation: 0}} 
-        isOpened={false}
+        data={{...envelope, x: 0, y: 0}} 
+        isOpened={false} 
         onClick={() => {}}
+        isClone={true}
       />
     </motion.div>
   );

@@ -19,9 +19,10 @@ interface Props {
   onClick: () => void;
   dropDelay?: number;
   isHidden?: boolean;
+  isClone?: boolean;
 }
 
-const Envelope = memo(function Envelope({ data, isOpened, onClick, dropDelay = 0, isHidden = false }: Props) {
+const Envelope = memo(function Envelope({ data, isOpened, onClick, dropDelay = 0, isHidden = false, isClone = false }: Props) {
   const [hovered, setHovered] = useState(false);
   const colors = PAPER_COLORS[data.paper] ?? PAPER_COLORS.cream;
 
@@ -34,17 +35,14 @@ const Envelope = memo(function Envelope({ data, isOpened, onClick, dropDelay = 0
         top: data.y,
         width: data.width,
         height: data.height,
-        rotate: data.rotation,
+        rotate: isClone ? 0 : data.rotation,
         zIndex: hovered ? 20 : 10,
         transformOrigin: 'center bottom',
         cursor: 'pointer',
         opacity: isHidden ? 0 : 1,
         pointerEvents: isHidden ? 'none' : 'auto',
       }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: isHidden ? 0 : 1 }}
-      transition={{ opacity: { duration: 0.15 } }}
-      whileHover={!isHidden ? { 
+      whileHover={!isHidden && !isClone ? { 
         y: -8, 
         scale: 1.04, 
         rotate: data.rotation + 0.8,
