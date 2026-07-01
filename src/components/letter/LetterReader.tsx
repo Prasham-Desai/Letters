@@ -115,9 +115,11 @@ const LetterReader = memo(function LetterReader({ letter, content, onClose }: Pr
                   background: 'linear-gradient(135deg, #fdfaf4 0%, #faf3e4 40%, #f4ebd8 100%)',
                   borderRadius: '3px',
                   boxShadow: '0 24px 64px rgba(22,14,6,0.35), 0 8px 24px rgba(22,14,6,0.18), inset 0 0 40px rgba(180,140,90,0.08)',
-                  padding: 'clamp(36px, 8vw, 60px) clamp(28px, 6vw, 52px)',
                   position: 'relative',
                   overflow: 'hidden',
+                  maxHeight: '85vh',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}
               >
                 {/* Paper texture overlay */}
@@ -133,17 +135,37 @@ const LetterReader = memo(function LetterReader({ letter, content, onClose }: Pr
                   position: 'absolute', top: 0, left: 0, right: 0, height: 4,
                   background: 'linear-gradient(90deg, transparent, rgba(160,128,78,0.25) 25%, rgba(160,128,78,0.2) 75%, transparent)',
                   boxShadow: '0 1px 2px rgba(255,255,255,0.6) inset',
+                  zIndex: 2,
                 }} aria-hidden="true" />
 
-                {/* Faded wax seal watermark at top */}
-                <div style={{
-                  position: 'absolute', top: -14, left: '50%',
-                  transform: 'translateX(-50%)',
-                  opacity: 0.18, pointerEvents: 'none',
-                  filter: 'blur(0.5px)',
-                }}>
-                  <WaxSeal type={letter.sealType} color={letter.seal} cracked size={28} />
-                </div>
+                <div 
+                  className="letter-scroll"
+                  style={{
+                    position: 'relative',
+                    zIndex: 1,
+                    overflowY: 'auto',
+                    padding: 'clamp(36px, 8vw, 60px) clamp(28px, 6vw, 52px)',
+                  }}
+                >
+                  <style>{`
+                    .letter-scroll::-webkit-scrollbar {
+                      display: none;
+                    }
+                    .letter-scroll {
+                      -ms-overflow-style: none;
+                      scrollbar-width: none;
+                    }
+                  `}</style>
+
+                  {/* Faded wax seal watermark at top */}
+                  <div style={{
+                    position: 'absolute', top: -14, left: '50%',
+                    transform: 'translateX(-50%)',
+                    opacity: 0.18, pointerEvents: 'none',
+                    filter: 'blur(0.5px)',
+                  }}>
+                    <WaxSeal type={letter.sealType} color={letter.seal} cracked size={28} />
+                  </div>
 
                 {/* "Open when..." label */}
                 <p style={{
@@ -183,10 +205,13 @@ const LetterReader = memo(function LetterReader({ letter, content, onClose }: Pr
                   — always, yours
                 </motion.div>
 
+                </div>
+
                 {/* Bottom worn edge */}
                 <div style={{
                   position: 'absolute', bottom: 0, left: 0, right: 0, height: 4,
                   background: 'linear-gradient(90deg, transparent, rgba(160,128,78,0.2) 25%, rgba(160,128,78,0.15) 75%, transparent)',
+                  zIndex: 2,
                 }} aria-hidden="true" />
               </div>
 
