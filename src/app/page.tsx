@@ -140,7 +140,7 @@ export default function Home() {
         .desk-surface {
           position: relative;
           height: min(580px, 68vh);
-          background-color: #4a3726;
+          background-color: #3a2818;
           border: 3px solid #140d0a;
           border-radius: 8px 12px 0 0;
           overflow: hidden;

@@ -252,7 +252,7 @@ function FlightEnvelope({ flight, onComplete }: { flight: Flight, onComplete: (e
         margin: `${-envHeight / 2}px 0 0 ${-envWidth / 2}px`, // Perfect mathematical center
         zIndex: 9999,
         pointerEvents: 'none',
-        transformOrigin: 'center center',
+        transformOrigin: 'center bottom',
         filter: 'drop-shadow(0 12px 24px rgba(40,24,8,0.3))',
       }}
       initial={{ 
