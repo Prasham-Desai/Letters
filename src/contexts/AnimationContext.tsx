@@ -94,9 +94,14 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
       return next;
     });
 
-    // Open all relevant doors for mass flights
-    setIsCollectionOpening(true);
-    setIsMailboxOpening(true);
+    // Determine which boxes need to open
+    const types = new Set(flights.map(f => f.type));
+    const openMailbox = types.has('MAILBOX_TO_DESK') || types.has('COLLECTION_TO_MAILBOX');
+    const openCollection = types.has('DESK_TO_COLLECTION') || types.has('COLLECTION_TO_MAILBOX');
+
+    // Open relevant doors for mass flights
+    if (openCollection) setIsCollectionOpening(true);
+    if (openMailbox) setIsMailboxOpening(true);
 
     let completedCount = 0;
 
@@ -108,8 +113,8 @@ export function AnimationProvider({ children }: { children: ReactNode }) {
             originalOnComplete();
             completedCount++;
             if (completedCount === flights.length) {
-              setIsCollectionOpening(false);
-              setIsMailboxOpening(false);
+              if (openCollection) setIsCollectionOpening(false);
+              if (openMailbox) setIsMailboxOpening(false);
               onAllComplete();
             }
           };
