@@ -221,27 +221,29 @@ const CollectionBox = memo(function CollectionBox({ count, letters, onOpen, mail
                   </p>
                 </div>
                 
-                {/* Reset button always visible to allow returning letters anytime */}
-                <button
-                  onClick={handleReturnAll}
-                  style={{
-                    background: 'none', border: '1px solid rgba(139,118,90,0.3)',
-                    borderRadius: '4px', padding: '6px 10px',
-                    fontFamily: 'var(--font-ui)', fontSize: '10px',
-                    color: '#8a7a68', cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(139,118,90,0.1)';
-                    e.currentTarget.style.color = '#5a4a38';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'none';
-                    e.currentTarget.style.color = '#8a7a68';
-                  }}
-                >
-                  Return to Mailbox
-                </button>
+                {/* Reset button only visible if ALL letters are in collection (mailbox and desk empty) */}
+                {mailboxCount === 0 && deskCount === 0 && (
+                  <button
+                    onClick={handleReturnAll}
+                    style={{
+                      background: 'none', border: '1px solid rgba(139,118,90,0.3)',
+                      borderRadius: '4px', padding: '6px 10px',
+                      fontFamily: 'var(--font-ui)', fontSize: '10px',
+                      color: '#8a7a68', cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(139,118,90,0.1)';
+                      e.currentTarget.style.color = '#5a4a38';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'none';
+                      e.currentTarget.style.color = '#8a7a68';
+                    }}
+                  >
+                    Return to Mailbox
+                  </button>
+                )}
               </div>
 
               {/* Letters list */}
