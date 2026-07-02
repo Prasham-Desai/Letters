@@ -290,20 +290,6 @@ function FlightEnvelope({
     duration = 0.5;
   }
 
-  // Direct 2-point keyframes: start -> destination.
-  const posTimes = [0, 1];
-  const xKeyframes = [0, deltaX];
-  const yKeyframes = [0, deltaY];
-  const scaleKeyframes = [startScale, endScale];
-  const rotKeyframes = [rotStart, rotEnd];
-
-  // Ease out so the clone settles into place gently.
-  const motionTransition = {
-    duration,
-    times: posTimes,
-    ease: 'easeOut' as Easing,
-  };
-
   // Opacity: either constant, or a simple two-point fade near the very end.
   const opacityKeyframes = fadeAt >= 1 ? [1, 1] : [1, 1, 0];
   const opacityTimes = fadeAt >= 1 ? [0, 1] : [0, fadeAt, 1];
@@ -324,25 +310,23 @@ function FlightEnvelope({
         filter: 'drop-shadow(0 12px 24px rgba(40,24,8,0.3))',
       }}
       initial={{
-        x: xKeyframes[0],
-        y: yKeyframes[0],
-        scale: scaleKeyframes[0],
-        rotate: rotKeyframes[0],
+        x: 0,
+        y: 0,
+        scale: startScale,
+        rotate: rotStart,
         opacity: opacityKeyframes[0],
       }}
       animate={{
-        x: xKeyframes,
-        y: yKeyframes,
-        scale: scaleKeyframes,
-        rotate: rotKeyframes,
+        x: deltaX,
+        y: deltaY,
+        scale: endScale,
+        rotate: rotEnd,
         opacity: opacityKeyframes,
       }}
       transition={{
-        x: motionTransition,
-        y: motionTransition,
-        scale: motionTransition,
-        rotate: motionTransition,
-        opacity: opacityTransition,
+        duration,
+        ease: 'easeInOut',
+        opacity: { duration, times: opacityTimes, ease: 'easeOut' }
       }}
       onAnimationComplete={() => {
         flight.onComplete();
